@@ -1,12 +1,11 @@
 """Steam Koshel — turns raw Steam API data into one clean payload.
 
-The front-end does the presentation maths (ranks, charts, portraits) itself,
-so this module only has to be honest about the raw material:
+The front-end does the presentation maths (charts, portraits) itself, so this
+module only has to be honest about the raw material:
 
-    profile + games + achievements + inventory + wishlist + friends
+    profile + games + achievements + inventory + friends
 
-The payload matches `static/app.js` 1:1, which means demo mode and live mode
-render through exactly the same code.
+The payload matches `static/app.js` 1:1.
 """
 
 from __future__ import annotations
@@ -26,6 +25,54 @@ MAX_FRIENDS = 6
 HEAVY_GENRES = {"Action", "RPG", "Adventure", "Simulation", "Racing", "Massively Multiplayer"}
 SHORT_HOURS = 12
 LONG_HOURS = 80
+
+# Steam “games” lists contain plenty of creative tools and utilities. They are
+# useful, but they should never be recommended as “what to play tonight”.
+SOFTWARE_NAMES = (
+    "wallpaper engine",
+    "vtube studio",
+    "vtuber",
+    "soundpad",
+    "voicemod",
+    "obs studio",
+    "blender",
+    "aseprite",
+    "clip studio",
+    "rpg maker",
+    "game guru",
+    "faceit",
+    "3dmark",
+    "cinebench",
+    "furmark",
+    "msi afterburner",
+    "fl studio",
+    "ableton",
+    "davinci resolve",
+    "unreal engine",
+    "unity",
+    "godot",
+    "source filmmaker",
+    "tabletop simulator",
+)
+SOFTWARE_CATEGORIES = (
+    "utilities",
+    "software",
+    "animation & modeling",
+    "audio production",
+    "design & illustration",
+    "video production",
+    "game development",
+    "photo editing",
+    "web publishing",
+)
+
+
+def _is_software(name: str, genres: list[str], categories: list[str]) -> bool:
+    haystack = " ".join([name or ""] + genres + categories).lower()
+    if any(needle in haystack for needle in SOFTWARE_NAMES):
+        return True
+    lowered_categories = " ".join(categories).lower()
+    return any(needle in lowered_categories for needle in SOFTWARE_CATEGORIES)
 
 
 def _year_from(date_str: str) -> int:
@@ -59,6 +106,8 @@ def _tags_for(game: dict[str, Any]) -> list[str]:
         tags.append("long")
     if game.get("delisted"):
         tags.append("delisted")
+    if game.get("software"):
+        tags.append("software")
     return tags
 
 
@@ -115,6 +164,7 @@ def _game_from(raw: dict[str, Any], detail: Optional[dict[str, Any]], delisted: 
         "coop": "co-op" in lowered,
         "multi": "multi-player" in lowered or "multiplayer" in lowered,
         "vr": "vr" in lowered,
+        "software": _is_software(detail.get("name") or raw.get("name") or "", genres, categories),
         "delisted": delisted,
         "cover": f"https://cdn.cloudflare.steamstatic.com/steam/apps/{appid}/header.jpg",
         "accent": "#7C5CFF",
@@ -193,34 +243,6 @@ async def _fill_achievements(
         first.pop("_ts", None)
 
     return {"first": first, "rarest": rarest}
-
-
-async def _build_wishlist(client: SteamClient, steamid: str, lang: str) -> list[dict[str, Any]]:
-    entries = await client.wishlist(steamid, lang)
-    if not entries:
-        return []
-
-    details = await client.app_details_many(
-        [e["appid"] for e in entries if e.get("appid")], lang="english", limit=8
-    )
-
-    out: list[dict[str, Any]] = []
-    for entry in entries[:8]:
-        appid = entry.get("appid") or 0
-        detail = details.get(appid) or {}
-        price_overview = detail.get("price_overview") or {}
-        price = round(float(price_overview.get("initial") or 0) / 100, 2)
-        final = round(float(price_overview.get("final") or 0) / 100, 2)
-        out.append(
-            {
-                "name": detail.get("name") or entry.get("name") or f"App {appid}",
-                "price": price,
-                "final": final,
-                "discount": int(price_overview.get("discount_percent") or 0),
-                "year": entry.get("year") or _year_from((detail.get("release_date") or {}).get("date", "")),
-            }
-        )
-    return out
 
 
 async def _build_friends(
@@ -353,17 +375,25 @@ async def build_profile(
         if any(g["price"] == 0 and not g["delisted"] and g["hours"] == 0 for g in games):
             warnings.append("partial_prices")
 
-    achievements, inventory, wishlist, friends = await asyncio.gather(
+    media, achievements, inventory_result, friends = await asyncio.gather(
+        client.profile_media(steamid),
         _fill_achievements(client, steamid, games, lang),
         client.inventory(steamid),
-        _build_wishlist(client, steamid, lang),
         _build_friends(client, steamid, games),
     )
 
-    if not inventory:
+    inventory = inventory_result.get("items") or []
+    inventory_hidden = bool(inventory_result.get("hidden"))
+    if inventory_hidden:
+        warnings.append("inventory_private")
+    elif not inventory:
         warnings.append("inventory_unavailable")
-    if not wishlist:
-        warnings.append("wishlist_unavailable")
+
+    last_logoff = _ms(summary.get("lastlogoff"))
+    persona_state = int(summary.get("personastate") or 0)
+    game_id = int(summary.get("gameid") or 0)
+    game_extra = summary.get("gameextrainfo") or ""
+    game_server = summary.get("gameserverip") or ""
 
     profile = {
         "steamid": steamid,
@@ -372,8 +402,16 @@ async def build_profile(
         "level": int(level or 0),
         "country": summary.get("loccountrycode") or "",
         "created": _ms(summary.get("timecreated")),
-        "online": int(summary.get("personastate") or 0) > 0,
+        "online": persona_state > 0,
+        "personastate": persona_state,
+        "gameid": game_id,
+        "gameextrainfo": game_extra,
+        "gameserverip": game_server,
+        "lastlogoff": last_logoff,
         "avatar": summary.get("avatarfull") or summary.get("avatarmedium") or "",
+        "avatar_animated": media.get("avatar_animated") or "",
+        "background": media.get("background") or "",
+        "background_movie": media.get("background_movie") or "",
         "bans": bans,
         "friends": len(friends),
     }
@@ -384,10 +422,12 @@ async def build_profile(
         "profile": profile,
         "games": games,
         "inventory": inventory,
+        "inventory_hidden": inventory_hidden,
+        "inventory_total": int(inventory_result.get("total") or 0),
         "achievements": achievements,
         "yearly": _yearly(games),
         "hourly": None,
-        "wishlist": wishlist,
+        "wishlist": [],
         "friends": friends,
         "warnings": warnings,
         "meta": {

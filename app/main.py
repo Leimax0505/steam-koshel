@@ -3,23 +3,26 @@
 Run locally:
     uvicorn app.main:app --reload --port 8000
 
-Open http://127.0.0.1:8000 — the same page also works as a plain file
-(`index.html`) with built-in demo profiles and no backend at all.
+Open http://127.0.0.1:8000. The front-end needs this backend for live
+Steam data; every profile is cached so repeat lookups stay cheap.
 """
 
 from __future__ import annotations
 
 import asyncio
 import os
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, Optional
 
 import httpx
 from dotenv import load_dotenv
+from urllib.parse import urlparse
+
 from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from .analyzer import build_profile
@@ -107,35 +110,95 @@ def _error_response(exc: Exception) -> JSONResponse:
 
 
 def _remember(request: Request, payload: dict[str, Any]) -> None:
-    """Anonymised weekly hall of fame, kept in the same cache."""
+    """Keep the week's public records and a short live event feed.
+
+    The pool is deliberately small (60 profiles) and lives in the existing
+    SQLite cache, so there is no extra database to maintain.
+    """
     try:
         cache: Cache = request.app.state.cache
-        records = cache.get("hall:week") or []
         profile = payload.get("profile") or {}
         games = payload.get("games") or []
         inventory = payload.get("inventory") or []
         persona = str(profile.get("persona") or "player")
-        masked = (persona[:1] + "•••") if len(persona) > 1 else "•••"
+        steamid = str(profile.get("steamid") or "")
+        if not steamid:
+            return
+
+        library_value = round(sum(float(g.get("salePrice") or g.get("price") or 0) for g in games), 2)
+        inventory_value = round(
+            sum(float(i.get("price") or 0) * max(1, int(i.get("count") or 1)) for i in inventory), 2
+        )
         hours = round(sum(float(g.get("hours") or 0) for g in games))
-        portfolio = round(
-            sum(float(g.get("salePrice") or 0) for g in games)
-            + sum(float(i.get("price") or 0) for i in inventory),
-            2,
-        )
         rarest = ((payload.get("achievements") or {}).get("rarest") or [{}])[0]
-        records.append(
-            {
-                "who": masked,
-                "hours": hours,
-                "games": len(games),
-                "portfolio": portfolio,
-                "rarity": rarest.get("rarity"),
-                "ts": payload.get("meta", {}).get("generated_at"),
-            }
+        priced = [g for g in games if float(g.get("salePrice") or g.get("price") or 0) > 0]
+        priciest = max(
+            priced,
+            key=lambda g: float(g.get("salePrice") or g.get("price") or 0),
+            default={},
         )
-        records = sorted(records, key=lambda r: r.get("ts") or 0, reverse=True)[:50]
-        cache.set("hall:week", records, ttl=7 * 24 * 3_600)
-    except Exception:  # never let the hall break a profile request
+        ts = payload.get("meta", {}).get("generated_at") or 0
+
+        entry = {
+            "persona": persona,
+            "steamid": steamid,
+            "avatar": profile.get("avatar") or "",
+            "hours": hours,
+            "games": len(games),
+            "library": library_value,
+            "inventory": inventory_value,
+            "rarity": rarest.get("rarity"),
+            "rarest_name": rarest.get("name") or "",
+            "rarest_game": rarest.get("game") or "",
+            "priciest": round(float(priciest.get("salePrice") or priciest.get("price") or 0), 2),
+            "priciest_name": priciest.get("name") or "",
+            "ts": ts,
+        }
+
+        pool = cache.get("hall:pool") or []
+        pool = [row for row in pool if row.get("steamid") != steamid]
+        pool.insert(0, entry)
+        pool = pool[:60]
+        cache.set("hall:pool", pool, ttl=7 * 24 * 3_600)
+
+        events = cache.get("hall:events") or []
+        # One fresh set of events per profile keeps the feed readable even when
+        # the same profile is checked repeatedly.
+        events = [row for row in events if row.get("steamid") != steamid]
+        events.insert(
+            0,
+            {
+                "type": "check",
+                "persona": persona,
+                "steamid": steamid,
+                "detail": "",
+                "ts": ts,
+            },
+        )
+        if rarest.get("name"):
+            events.insert(
+                0,
+                {
+                    "type": "trophy",
+                    "persona": persona,
+                    "steamid": steamid,
+                    "detail": f"{rarest.get('name')} · {rarest.get('rarity')}%",
+                    "ts": ts,
+                },
+            )
+        if priciest.get("name"):
+            events.insert(
+                0,
+                {
+                    "type": "game",
+                    "persona": persona,
+                    "steamid": steamid,
+                    "detail": priciest.get("name"),
+                    "ts": ts,
+                },
+            )
+        cache.set("hall:events", events[:40], ttl=7 * 24 * 3_600)
+    except Exception:  # never let the ticker break a profile request
         return
 
 
@@ -194,25 +257,90 @@ async def compare(
         return _error_response(exc)
 
 
+def _hall_payload(request: Request) -> dict[str, Any]:
+    cache: Cache = request.app.state.cache
+    pool = cache.get("hall:pool") or []
+    events = cache.get("hall:events") or []
+    if not pool:
+        return {"records": [], "events": [], "note": "no profiles checked yet"}
+
+    def leader(key: str, *, when: str = "max", category: str = "", kind: str = "int", detail: str = "") -> Optional[dict[str, Any]]:
+        rows = [row for row in pool if row.get(key) is not None and float(row.get(key) or 0) > 0]
+        if not rows:
+            return None
+        row = max(rows, key=lambda item: float(item.get(key) or 0)) if when == "max" else min(rows, key=lambda item: float(item.get(key) or 0))
+        return {
+            "category": category or key,
+            "kind": kind,
+            "value": row.get(key),
+            "detail": row.get(detail) if detail else "",
+            "persona": row.get("persona") or "player",
+            "steamid": row.get("steamid") or "",
+            "ts": row.get("ts") or 0,
+        }
+
+    records = [
+        leader("library", category="library", kind="money"),
+        leader("inventory", category="inventory", kind="money"),
+        leader("hours", category="hours", kind="hours"),
+        leader("rarity", when="min", category="rarity", kind="percent", detail="rarest_name"),
+        leader("games", category="games", kind="int"),
+        leader("priciest", category="priciest", kind="money", detail="priciest_name"),
+    ]
+    return {
+        "records": [row for row in records if row],
+        "events": events[:24],
+        "updated_at": int(time.time()),
+    }
+
+
+@app.get("/api/hall-of-fame")
+async def hall_of_fame(request: Request) -> dict[str, Any]:
+    return _hall_payload(request)
+
+
 @app.get("/api/hall")
 async def hall(request: Request) -> dict[str, Any]:
-    records = request.app.state.cache.get("hall:week") or []
-    if not records:
-        return {"records": [], "note": "no profiles checked yet"}
+    """Backwards-compatible alias for the old endpoint name."""
+    return _hall_payload(request)
 
-    def best(key: str) -> Optional[dict[str, Any]]:
-        rows = [r for r in records if r.get(key) is not None]
-        return max(rows, key=lambda r: r[key]) if rows else None
 
-    return {
-        "records": records[:20],
-        "leaders": {
-            "hours": best("hours"),
-            "games": best("games"),
-            "portfolio": best("portfolio"),
-        },
-        "note": "anonymised, refreshed weekly",
-    }
+ALLOWED_IMAGE_HOSTS = (
+    "steamstatic.com",
+    "steamcdn-a.akamaihd.net",
+    "steamcommunity-a.akamaihd.net",
+)
+
+
+@app.get("/api/avatar-proxy")
+async def avatar_proxy(request: Request, url: str = Query(..., max_length=500)) -> Response:
+    """Small image proxy used only to keep the passport canvas untainted.
+
+    It accepts Steam CDN avatars and nothing else, and never touches videos.
+    """
+    parsed = urlparse(url)
+    host = (parsed.hostname or "").lower()
+    if parsed.scheme not in ("http", "https") or not any(
+        host == allowed or host.endswith("." + allowed) for allowed in ALLOWED_IMAGE_HOSTS
+    ):
+        raise HTTPException(status_code=400, detail="bad_image_host")
+    try:
+        upstream = await request.app.state.http.get(
+            url,
+            timeout=12.0,
+            headers={"User-Agent": USER_AGENT, "Accept": "image/*"},
+        )
+        upstream.raise_for_status()
+    except httpx.HTTPError:
+        raise HTTPException(status_code=502, detail="image_unavailable") from None
+    content_type = upstream.headers.get("content-type", "image/jpeg")
+    if not content_type.startswith("image/"):
+        raise HTTPException(status_code=415, detail="not_an_image")
+    return Response(
+        content=upstream.content,
+        media_type=content_type,
+        headers={"Cache-Control": "public, max-age=86400"},
+    )
 
 
 @app.get("/api/cache/stats")
