@@ -101,7 +101,6 @@
     steamLevel: ['Уровень Steam', 'Steam level', 'Steam 等级'],
     paidWord: ['платных', 'paid', '付费'],
 
-    loadingProfile: ['Ищем профиль…', 'Looking up the profile…', '正在查找档案…'],
     loadStep1: ['Ищем профиль по ссылке или нику', 'Resolving the profile link', '解析资料链接'],
     loadStep2: ['Считаем стоимость библиотеки и инвентаря', 'Pricing the library and inventory', '计算库存与饰品价值'],
     loadStep3: ['Анализируем трофеи, жанры и привычки', 'Reading achievements, genres and habits', '分析成就、类型与习惯'],
@@ -123,17 +122,14 @@
 
     oHours: ['Время в играх', 'Hours played', '游戏时长'],
     oGames: ['Игр в библиотеке', 'Games owned', '游戏数量'],
-    oValue: ['Стоимость библиотеки', 'Library value', '库价值'],
     oInventory: ['Инвентарь', 'Inventory', '库存饰品'],
     oPortfolio: ['Портфель целиком', 'Portfolio total', '总资产'],
-    portfolioNote: ['Библиотека по текущим ценам плюс инвентарь.', 'Library at current prices plus inventory.', '按现价计算的游戏库加上库存。'],
     costPerHour: ['Цена одного часа', 'Cost per hour', '每小时成本'],
     avgPerGame: ['в среднем {n} ч на игру', 'avg {n} h per game', '平均每款 {n} 小时'],
     playedOf: ['запускали {n} из {m}', 'played {n} of {m}', '玩过 {n}/{m}'],
     inventoryHidden: ['Инвентарь скрыт', 'Inventory is private', '库存未公开'],
     inventoryEmpty: ['Инвентарь пуст', 'Inventory is empty', '库存为空'],
     costPerHourHint: ['Сколько стоит час твоего удовольствия', 'What an hour of your fun costs', '你的快乐每小时多少钱'],
-    inventoryItems: ['предметов в инвентаре', 'items in inventory', '件库存物品'],
     inventoryTotal: ['всего предметов', 'total items', '物品总数'],
 
     curatorTitle: ['AI-куратор', 'AI curator', 'AI 策展人'],
@@ -146,7 +142,6 @@
     qualitySub: ['Средняя оценка критиков по библиотеке', 'Average critic score across your library', '库内游戏的媒体平均分'],
     avgRating: ['Средняя оценка', 'Average score', '平均分'],
     ratedGames: ['{n} игр с оценкой критиков', '{n} games with critic scores', '{n} 款有媒体评分'],
-    antiHypeTitle: ['Анти-хайп', 'Anti-hype', '反跟风指数'],
     hypeTrend: ['В тренде', 'On trend', '紧跟潮流'],
     hypeHidden: ['Искатель скрытых шедевров', 'Hidden-gem hunter', '隐藏佳作猎人'],
     hypeBalanced: ['Здоровый баланс', 'Healthy balance', '平衡玩家'],
@@ -180,7 +175,6 @@
     pricedOf: ['Оценка по {n} играм с известной ценой из {m}', 'Estimated from {n} priced games of {m}', '基于 {m} 款中 {n} 款有价格的游戏估算'],
 
     backlogTitle: ['Непройденные игры', 'Unplayed games', '未玩过的游戏'],
-    backlogSub: ['Игры в запасе', 'Games in reserve', '库存待玩'],
     backlogGames: ['{n} игр ждут первого запуска', '{n} games await their first launch', '{n} 款游戏等待首次启动'],
     backlogTime: ['Время на прохождение', 'Time to finish', '通关所需时间'],
     backlogValue: ['Стоимость нетронутого', 'Value untouched', '未玩价值'],
@@ -190,7 +184,6 @@
     days: ['дней', 'days', '天'],
     daysTotal: ['за всё время', 'in total', '累计'],
     hoursShort: ['ч', 'h', '小时'],
-    yearsShort: ['лет', 'years', '年'],
 
     libTitle: ['Библиотека под контролем', 'Library, under control', '掌控你的游戏库'],
     libSub: ['Фильтры в один клик и честный подбор на вечер.',
@@ -205,9 +198,7 @@
     filterShort: ['До 15 часов', 'Under 15 hours', '15 小时以内'],
     searchGames: ['Поиск по названию', 'Search by title', '按名称搜索'],
     noGames: ['Под эти фильтры пока ничего не подходит.', 'Nothing matches these filters yet.', '没有符合这些筛选条件的游戏。'],
-    hoursPlayed: ['{n} ч', '{n} h', '{n} 小时'],
     neverLabel: ['ни разу', 'never', '未玩'],
-    smartPick: ['Smart Pick', 'Smart Pick', '智能推荐'],
     smartPickTitle: ['На вечер', 'For tonight', '今晚玩什么'],
     smartPickSub: ['Подобрано по времени, жанрам и тому, что давно ждёт.',
       'Chosen by time, favourite genres and what has been waiting too long.',
@@ -235,6 +226,8 @@
     achProgress: ['{a} из {t}', '{a} of {t}', '{a} / {t}'],
     achievementsWord: ['Достижений', 'Achievements', '成就'],
     yearSummary: ['{h} часов · {g} игр', '{h} hours · {g} games', '{h} 小时 · {g} 款游戏'],
+    yearShare: ['{p}% всего времени', '{p}% of all playtime', '占全部时长的 {p}%'],
+    yearAvg: ['в среднем {h} ч на игру', 'avg {h} h per game', '平均每款 {h} 小时'],
     firstAchOn: ['получено {d}', 'unlocked {d}', '解锁于 {d}'],
 
     socialCompareTitle: ['Баттл 1 на 1', 'Head to head', '一对一'],
@@ -249,21 +242,22 @@
     metricGames: ['Игры', 'Games', '游戏'],
     metricValue: ['Портфель', 'Portfolio', '资产'],
     metricAch: ['Трофеи', 'Trophies', '成就'],
+    metricInventory: ['Инвентарь', 'Inventory', '库存'],
+    metricAchRatio: ['Собрано достижений', 'Achievement completion', '成就完成度'],
+    metricQuality: ['Средний рейтинг игр', 'Average game rating', '游戏平均评分'],
+    metricAvgHours: ['Часов на игру', 'Hours per game', '每款游戏时长'],
+    metricPerfect: ['Пройдено на 100%', 'Completed 100%', '100% 通关数'],
+    metricLevel: ['Уровень Steam', 'Steam level', 'Steam 等级'],
+    metricAge: ['Лет в Steam', 'Years on Steam', 'Steam 年资'],
+    metricFriends: ['Друзей', 'Friends', '好友数'],
     compareNeedFriend: ['Нужна ссылка на реальный профиль друга.', 'A real friend profile link is required.', '需要好友的真实资料链接。'],
 
     friendsTitle: ['Идеальный напарник', 'The perfect co-op partner', '完美队友'],
     friendsSub: ['Совместимость по общим несыгранным кооперативным играм', 'Chemistry from shared unplayed co-op games', '基于共同未玩的合作游戏计算契合度'],
     friendsEmpty: ['Список друзей закрыт или пуст.', 'The friend list is private or empty.', '好友列表未公开或为空。'],
+    friendsDrag: ['Перетащи друга, чтобы поставить его выше в списке.', 'Drag a friend to move them up the list.', '拖动好友可调整顺序。'],
     compat: ['совместимость', 'chemistry', '契合度'],
     sharedGames: ['{n} общих игр', '{n} shared games', '{n} 款共同游戏'],
-    radarTitle: ['Радар профиля', 'Profile radar', '档案雷达'],
-    radarSub: ['Ты и лучший напарник — по шести осям', 'You and your best partner — six axes', '你与最佳队友 —— 六个维度'],
-    radarHours: ['Часы', 'Hours', '时长'],
-    radarLibrary: ['Библиотека', 'Library', '库'],
-    radarTrophies: ['Трофеи', 'Trophies', '成就'],
-    radarQuality: ['Качество', 'Quality', '品质'],
-    radarSocial: ['Кооп', 'Co-op', '合作'],
-    radarDiversity: ['Разнообразие', 'Diversity', '多样性'],
 
     hallTitle: ['Зал славы', 'Hall of fame', '名人堂'],
     hallLibrary: ['Самая дорогая библиотека', 'Priciest library', '最贵游戏库'],
@@ -272,7 +266,6 @@
     hallRarity: ['Редчайший трофей', 'Rarest trophy', '最稀有成就'],
     hallGames: ['Больше всего игр', 'Most games', '最多游戏'],
     hallPriciest: ['Самая дорогая игра', 'Priciest game', '最贵游戏'],
-    hallEvents: ['События недели', 'This week', '本周动态'],
     hallEmpty: ['Проверь первый профиль — рекорд появится здесь.', 'Check the first profile — its record lands here.', '查看第一个档案，纪录会出现在这里。'],
     hallLive: ['живой поток', 'live feed', '实时'],
     eventCheck: ['проверил профиль', 'checked a profile', '查看了档案'],
@@ -288,7 +281,6 @@
     passportCode: ['КОД КАРТОЧКИ', 'CARD CODE', '卡片代码'],
     profileId: ['ID ПРОФИЛЯ', 'PROFILE ID', '档案 ID'],
     favoriteGenre: ['Любимый жанр', 'Favourite genre', '最爱的类型'],
-    inSteamSince: ['В Steam с {year}', 'In Steam since {year}', '加入 Steam 于 {year}'],
     passportScan: ['Подлинность подтверждается кодом карточки', 'Authenticity confirmed by the card code', '以卡片代码验证真伪'],
     passportFree: ['Коллекционный экземпляр · не для продажи', 'Collectible copy · not for sale', '收藏版本 · 非卖品'],
     passportBB: ['BB-код для витрины', 'BB code for your showcase', '展柜 BB 代码'],
@@ -304,20 +296,15 @@
     presenceNow: ['только что', 'just now', '刚刚'],
 
     toastSteamDown: ['Steam не ответил — попробуй через минуту.', 'Steam did not answer — try again in a minute.', 'Steam 无响应 —— 请稍后再试。'],
-    toastCopied: ['Ссылка скопирована', 'Link copied', '链接已复制'],
     toastNoProfile: ['Сначала проверь профиль', 'Analyze a profile first', '请先分析一个档案'],
-    toastHall: ['Рекорд обновлён', 'Record updated', '纪录已更新'],
-    toastCached: ['Steam ответил из кэша', 'Steam answered from cache', 'Steam 从缓存返回'],
 
     noData: ['Нет данных', 'No data', '无数据'],
     gamesWord: ['игр', 'games', '款游戏'],
     ofLibrary: ['библиотеки', 'of the library', '的游戏库'],
     today: ['сегодня', 'today', '今天'],
-    openInSteam: ['Открыть в Steam', 'Open in Steam', '在 Steam 中打开'],
     playersShare: ['игроков', 'of players', '的玩家'],
     free: ['Бесплатно', 'Free', '免费'],
     itemsWord: ['предметов', 'items', '件'],
-    friendsWord: ['друзей', 'friends', '位好友'],
     sinceWord: ['в Steam с', 'on Steam since', '加入 Steam 于'],
     genresWord: ['жанров', 'genres', '个类型'],
     bestOf: ['Лучшее', 'Best', '最佳']
@@ -458,6 +445,7 @@
     source: 'none',
     pickIndex: 0,
     compare: null,
+    dragFriend: '',
     lastQuery: ''
   };
 
@@ -548,7 +536,6 @@
     });
     return {
       source: data.source || 'live',
-      preset: data.preset || '',
       profile: data.profile || {},
       games: games,
       inventory: data.inventory || [],
@@ -557,7 +544,6 @@
       achievements: data.achievements || {},
       yearly: data.yearly || [],
       hourly: data.hourly || null,
-      wishlist: data.wishlist || [],
       friends: data.friends || [],
       warnings: data.warnings || []
     };
@@ -1051,22 +1037,23 @@
    * ------------------------------------------------------------------ */
 
   function duelRows(a, b) {
+    var ageA = (a.persona && a.persona.accountAge) || 0;
+    var ageB = (b.persona && b.persona.accountAge) || 0;
+    var lvlA = (a.profile && a.profile.level) || 0;
+    var lvlB = (b.profile && b.profile.level) || 0;
     return [
       { label: 'metricHours', a: a.totals.hours, b: b.totals.hours, fmt: 'hours' },
       { label: 'metricGames', a: a.totals.games, b: b.totals.games, fmt: 'int' },
       { label: 'metricValue', a: a.money.portfolio, b: b.money.portfolio, fmt: 'money' },
-      { label: 'metricAch', a: a.achievements.unlocked, b: b.achievements.unlocked, fmt: 'int' }
-    ];
-  }
-
-  function radarAxes(m) {
-    return [
-      { label: 'radarHours', v: clamp(Math.sqrt(m.totals.hours / 4000) * 100, 6, 100) },
-      { label: 'radarLibrary', v: clamp((m.totals.games / 60) * 100, 6, 100) },
-      { label: 'radarTrophies', v: clamp(m.achievements.ratio * 140, 4, 100) },
-      { label: 'radarQuality', v: clamp(m.quality.avgMc, 10, 100) },
-      { label: 'radarSocial', v: clamp(m.friends.length * 18 + 12, 8, 100) },
-      { label: 'radarDiversity', v: clamp(m.genres.length * 11, 10, 100) }
+      { label: 'metricInventory', a: a.money.inventory, b: b.money.inventory, fmt: 'money' },
+      { label: 'metricAch', a: a.achievements.unlocked, b: b.achievements.unlocked, fmt: 'int' },
+      { label: 'metricAchRatio', a: a.achievements.ratio * 100, b: b.achievements.ratio * 100, fmt: 'percent' },
+      { label: 'metricQuality', a: a.quality.avgMc, b: b.quality.avgMc, fmt: 'float1' },
+      { label: 'metricAvgHours', a: a.totals.avgHours, b: b.totals.avgHours, fmt: 'hours' },
+      { label: 'metricPerfect', a: a.achievements.done.length, b: b.achievements.done.length, fmt: 'int' },
+      { label: 'metricLevel', a: lvlA, b: lvlB, fmt: 'int' },
+      { label: 'metricAge', a: ageA, b: ageB, fmt: 'int' },
+      { label: 'metricFriends', a: a.friends.length, b: b.friends.length, fmt: 'int' }
     ];
   }
 
@@ -1647,6 +1634,9 @@
           '<span class="tl-row__val">' + num(Math.round(y.h)) + ' ' + t('hoursShort') + '</span>' +
           '</button>';
       }).join('') + '</div>' +
+        '<div class="progress__caption" style="margin-top:10px"><span>' +
+          t('yearShare', { p: Math.round((sel.h / (m.totals.hours || 1)) * 100) }) + '</span><span>' +
+          t('yearAvg', { h: sel.g ? num(Math.round(sel.h / sel.g)) : '0' }) + '</span></div>' +
         (yearGames.length ? '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)">' +
           yearGames.map(function (g) {
             return '<div class="row" style="justify-content:space-between;padding:5px 0;font-size:12px">' +
@@ -1683,7 +1673,6 @@
    * ------------------------------------------------------------------ */
 
   function renderSocial(m) {
-    var best = m.friends[0] || null;
     var html = '';
 
     html += card({
@@ -1706,82 +1695,42 @@
     });
 
     html += card({
-      span: 7,
+      span: 12,
       title: t('friendsTitle'),
       hint: t('friendsSub'),
       aside: '<span class="badge badge--accent">' + m.friends.length + '</span>',
-      body: m.friends.length ? '<div class="friends">' + m.friends.map(function (f) {
-        return '<div class="friend">' +
-          '<span class="friend__ava">' + avatarHtml(f.avatar, f.persona) + '</span>' +
-          '<div style="min-width:0"><div class="friend__name">' + esc(f.persona) + '</div>' +
-          '<div class="friend__sub">' + t('sharedGames', { n: f.shared.length }) + (f.shared.length ? ' · ' + esc(f.shared.slice(0, 2).join(', ')) : '') + '</div></div>' +
-          '<div class="friend__score"><b>' + f.compat + '%</b><small>' + t('compat') + '</small></div>' +
-          '</div>';
-      }).join('') + '</div>' : '<div class="empty"><span class="empty__icon">♧</span>' + t('friendsEmpty') + '</div>'
-    });
-
-    html += card({
-      span: 5,
-      title: t('radarTitle'),
-      hint: t('radarSub'),
-      body: radarSvg(m, best)
+      body: m.friends.length
+        ? '<p class="tiny muted" style="margin-bottom:10px">' + t('friendsDrag') + '</p>' +
+          '<div class="friends friends--scroll" id="friendsList">' + m.friends.map(function (f, i) {
+            var fid = String(f.steamid || i);
+            var score = f.compat == null ? '—' : f.compat + '%';
+            return '<div class="friend" draggable="true" data-friend="' + esc(fid) + '">' +
+              '<span class="friend__grip" aria-hidden="true">⋮⋮</span>' +
+              '<span class="friend__ava">' + avatarHtml(f.avatar, f.persona) + '</span>' +
+              '<div style="min-width:0"><div class="friend__name">' + esc(f.persona) + '</div>' +
+              '<div class="friend__sub">' + t('sharedGames', { n: f.shared.length }) + (f.shared.length ? ' · ' + esc(f.shared.slice(0, 2).join(', ')) : '') + '</div></div>' +
+              '<div class="friend__score"><b>' + score + '</b><small>' + t('compat') + '</small></div>' +
+              '</div>';
+          }).join('') + '</div>'
+        : '<div class="empty"><span class="empty__icon">♧</span>' + t('friendsEmpty') + '</div>'
     });
 
     $('#viewSocial').innerHTML = '<div class="bento">' + html + '</div>';
   }
 
-  function radarSvg(m, friend) {
-    var axes = radarAxes(m);
-    var axes2 = friend ? friendAxes(m, friend) : null;
-    var size = 210, c = size / 2, r = c - 30, n = axes.length;
-
-    function point(i, value, radius) {
-      var ang = (Math.PI * 2 * i) / n - Math.PI / 2;
-      var rr = (radius * clamp(value, 0, 100)) / 100;
-      return [c + Math.cos(ang) * rr, c + Math.sin(ang) * rr];
-    }
-    function poly(vals) {
-      return vals.map(function (v, i) { return point(i, v, r).map(function (x) { return round(x, 1); }).join(','); }).join(' ');
-    }
-    function rings() {
-      return [25, 50, 75, 100].map(function (p) {
-        return '<polygon class="radar-grid" points="' + axes.map(function (_, i) { return point(i, p, r).map(function (x) { return round(x, 1); }).join(','); }).join(' ') + '"/>';
-      }).join('');
-    }
-    function labels() {
-      return axes.map(function (a, i) {
-        var p = point(i, 114, r);
-        var anchor = p[0] < c - 6 ? 'end' : p[0] > c + 6 ? 'start' : 'middle';
-        return '<text class="radar-label" x="' + round(p[0], 1) + '" y="' + round(p[1] + 3, 1) + '" text-anchor="' + anchor + '">' + esc(t(a.label)) + '</text>';
-      }).join('');
-    }
-    return '<div class="radar-wrap">' +
-      '<svg class="radar" viewBox="0 0 ' + size + ' ' + size + '">' + rings() +
-      axes.map(function (_, i) {
-        var p = point(i, 100, r);
-        return '<line class="radar-axis" x1="' + c + '" y1="' + c + '" x2="' + round(p[0], 1) + '" y2="' + round(p[1], 1) + '"/>';
-      }).join('') +
-      (axes2 ? '<polygon class="radar-poly radar-poly--b" points="' + poly(axes2) + '"/>' : '') +
-      '<polygon class="radar-poly" points="' + poly(axes.map(function (a) { return a.v; })) + '"/>' +
-      labels() + '</svg>' +
-      '<div style="flex:1;min-width:150px">' +
-      '<div class="row" style="margin-bottom:8px"><span class="badge badge--accent">' + esc(m.profile.persona) + '</span>' +
-      (friend ? '<span class="badge">' + esc(friend.persona) + '</span>' : '') + '</div>' +
-      axes.map(function (a) {
-        return '<div class="metric"><span>' + esc(t(a.label)) + '</span><b>' + Math.round(a.v) + '</b></div>';
-      }).join('') +
-      (friend ? '<div class="note" style="margin-top:10px">' + t('compat') + ': <b>' + friend.compat + '%</b></div>' : '') +
-      '</div></div>';
-  }
-
-  function friendAxes(m, f) {
-    var k = (f.compat || 60) / 100;
-    var axes = radarAxes(m);
-    return axes.map(function (a, i) {
-      var wobble = (hash31((f.steamid || '') + i) % 22) - 11;
-      var base = i === 0 ? clamp(Math.sqrt((f.hours || 500) / 4000) * 100, 10, 100) : a.v * (0.62 + k * 0.5);
-      return clamp(base + wobble, 6, 100);
+  function reorderFriends(fromId, toId) {
+    var m = state.model;
+    if (!m || !m.friends || fromId === toId) return false;
+    var from = -1, to = -1;
+    m.friends.forEach(function (f, i) {
+      var id = String(f.steamid || i);
+      if (id === fromId) from = i;
+      if (id === toId) to = i;
     });
+    if (from < 0 || to < 0) return false;
+    var moved = m.friends.splice(from, 1)[0];
+    m.friends.splice(to, 0, moved);
+    return true;
   }
 
   /* ------------------------------------------------------------------ *
@@ -2737,6 +2686,48 @@
         }
         return;
       }
+    });
+
+    /* friends drag & drop */
+    document.addEventListener('dragstart', function (e) {
+      var item = e.target.closest ? e.target.closest('.friend') : null;
+      if (!item || !item.getAttribute('data-friend')) return;
+      state.dragFriend = item.getAttribute('data-friend');
+      item.classList.add('is-dragging');
+      if (e.dataTransfer) {
+        try {
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', state.dragFriend);
+        } catch (err) { /* older browsers */ }
+      }
+    });
+
+    document.addEventListener('dragover', function (e) {
+      if (!state.dragFriend) return;
+      var item = e.target.closest ? e.target.closest('.friend') : null;
+      if (!item) return;
+      e.preventDefault();
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+      $$('.friend.is-drop').forEach(function (n) { n.classList.remove('is-drop'); });
+      if (item.getAttribute('data-friend') !== state.dragFriend) item.classList.add('is-drop');
+    });
+
+    document.addEventListener('drop', function (e) {
+      if (!state.dragFriend) return;
+      var item = e.target.closest ? e.target.closest('.friend') : null;
+      if (!item) return;
+      e.preventDefault();
+      var target = item.getAttribute('data-friend');
+      if (reorderFriends(state.dragFriend, target) && state.model) renderSocial(state.model);
+      state.dragFriend = '';
+    });
+
+    document.addEventListener('dragend', function () {
+      state.dragFriend = '';
+      $$('.friend.is-dragging, .friend.is-drop').forEach(function (n) {
+        n.classList.remove('is-dragging');
+        n.classList.remove('is-drop');
+      });
     });
 
     /* keyboard */

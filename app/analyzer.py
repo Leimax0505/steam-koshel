@@ -20,7 +20,7 @@ from .steam_client import PrivateProfile, SteamClient, SteamError
 MAX_RETURNED_GAMES = 120
 MAX_DETAILS = 40
 MAX_ACHIEVEMENT_GAMES = 7
-MAX_FRIENDS = 6
+MAX_FRIENDS = 20
 
 HEAVY_GENRES = {"Action", "RPG", "Adventure", "Simulation", "Racing", "Massively Multiplayer"}
 SHORT_HOURS = 12
@@ -268,11 +268,14 @@ async def _build_friends(
         return friend_id, games_raw
 
     results = await asyncio.gather(*(load(fid) for fid in ids))
+    games_by_id = {fid: rows for fid, rows in results}
 
     friends: list[dict[str, Any]] = []
-    for friend_id, games_raw in results:
-        if not games_raw:
+    for friend_id in ids:
+        summary = by_id.get(friend_id)
+        if not summary:
             continue
+        games_raw = games_by_id.get(friend_id) or []
         friend_ids = {int(g.get("appid") or 0) for g in games_raw}
         shared_ids = own_ids & friend_ids
         shared = sorted(
@@ -281,11 +284,12 @@ async def _build_friends(
         )[:6]
         total_hours = sum(int(g.get("playtime_forever") or 0) for g in games_raw) // 60
 
-        summary = by_id.get(friend_id) or {}
         coop_shared = sum(
             1 for a in shared_ids if own[a].get("coop") and own[a]["hours"] <= 0.5
         )
-        compat = min(99, 38 + len(shared) * 9 + coop_shared * 11)
+        # Friends with private game lists still belong on the list, just without
+        # a compatibility score.
+        compat = min(99, 38 + len(shared) * 9 + coop_shared * 11) if games_raw else None
         friends.append(
             {
                 "steamid": friend_id,
@@ -297,7 +301,7 @@ async def _build_friends(
             }
         )
 
-    friends.sort(key=lambda f: f["compat"], reverse=True)
+    friends.sort(key=lambda f: (-1 if f["compat"] is None else f["compat"]), reverse=True)
     return friends
 
 
