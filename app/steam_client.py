@@ -11,7 +11,10 @@ from __future__ import annotations
 
 import asyncio
 import re
+import time
+from email.utils import parsedate_to_datetime
 from typing import Any, Iterable, Optional
+from xml.etree import ElementTree
 
 import httpx
 
@@ -20,6 +23,22 @@ from .cache import Cache
 STEAM_API = "https://api.steampowered.com"
 STORE_API = "https://store.steampowered.com"
 COMMUNITY_API = "https://steamcommunity.com"
+
+NEWS_FEED_TTL = 15 * 60
+# Big, always-updating pages — their news makes the top marquee feel alive.
+TOP_NEWS_APPS = (730, 570, 1172470, 271590)  # CS2, Dota 2, Apex, GTA V
+
+# Games offered in the top news feed filter (and used as the default set).
+NEWS_APPS: tuple[tuple[int, str], ...] = (
+    (730, "Counter-Strike 2"),
+    (570, "Dota 2"),
+    (252490, "Rust"),
+    (440, "Team Fortress 2"),
+)
+
+# Profile media (animated avatar / wallpaper) is purely decorative — a short
+# timeout keeps it from ever slowing down the main profile analysis.
+MEDIA_TIMEOUT = 4.0
 
 BROWSER_HEADERS = {
     "User-Agent": (
@@ -30,7 +49,17 @@ BROWSER_HEADERS = {
     "Accept-Language": "en-US,en;q=0.9",
 }
 
+# Public community pages are personalised by language, so ask for Russian.
+HTML_HEADERS = {
+    "User-Agent": BROWSER_HEADERS["User-Agent"],
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    "Accept-Language": "ru-RU,ru;q=0.9,en;q=0.8",
+}
+
 MEDIA_URL_RE = re.compile(r"https?://[^\s\"'<>]+?\.(?:webm|mp4|gif|jpg|jpeg|png)(?:\?[^\s\"'<>]*)?", re.I)
+HTML_MEDIA_RE = re.compile(r"<(?:source|img)\b[^>]*\bsrc=[\"']([^\"']+)[\"']", re.I)
+BG_URL_RE = re.compile(r"background-image\s*:\s*url\(\s*['\"]?([^'\")]+)", re.I)
+CDN_HOSTS = ("steamstatic.com", "akamaihd.net")
 
 STEAMID64_RE = re.compile(r"7656\d{13}")
 PROFILE_ID_RE = re.compile(r"/profiles/(\d{17})")
@@ -74,6 +103,7 @@ class SteamClient:
         ttl: int | None = None,
         allow_stale: bool = False,
         headers: dict[str, str] | None = None,
+        timeout: float = 16.0,
     ) -> Any:
         params = params or {}
         key = cache_key or f"{url}?{sorted(params.items())}"
@@ -86,7 +116,7 @@ class SteamClient:
         try:
             async with self._semaphore:
                 response = await self.http.get(
-                    url, params=params, timeout=16.0, headers=headers
+                    url, params=params, timeout=timeout, headers=headers
                 )
             status = response.status_code
             response.raise_for_status()
@@ -110,6 +140,8 @@ class SteamClient:
         *,
         cache_key: str,
         ttl: int = 86_400,
+        headers: dict[str, str] | None = None,
+        timeout: float = 16.0,
     ) -> str:
         """Fetch a public community page once and keep the HTML in cache."""
         fresh = self.cache.get(cache_key)
@@ -118,7 +150,10 @@ class SteamClient:
         try:
             async with self._semaphore:
                 response = await self.http.get(
-                    url, params=params or {}, timeout=16.0, headers=BROWSER_HEADERS
+                    url,
+                    params=params or {},
+                    timeout=timeout,
+                    headers=headers or HTML_HEADERS,
                 )
             response.raise_for_status()
             text = response.text
@@ -208,13 +243,20 @@ class SteamClient:
                 {"key": self.key, "steamid": steamid},
                 cache_key=f"animated-avatar:{steamid}",
                 ttl=7 * 86_400,
+                timeout=MEDIA_TIMEOUT,
             )
             url = self._first_media(data, ("webm", "mp4", "gif"))
             if url:
                 return url
         except SteamError:
             pass
-        return await self._media_from_profile_html(steamid, "animated_avatar", ("webm", "mp4", "gif"))
+
+        page = await self._profile_page(steamid)
+        return (
+            self._html_class_media(page, "playerAvatarAutoSizeInner", ("webm", "mp4"))
+            or self._html_class_media(page, "playerAvatarAutoSizeInner", ("gif",))
+            or self._html_class_media(page, "playerAvatar", ("webm", "mp4", "gif"))
+        )
 
     async def profile_background(self, steamid: str) -> dict[str, str]:
         """Background image and, when present, the animated movie URL."""
@@ -226,19 +268,23 @@ class SteamClient:
                 {"key": self.key, "steamid": steamid},
                 cache_key=f"profile-background:{steamid}",
                 ttl=7 * 86_400,
+                timeout=MEDIA_TIMEOUT,
             )
             image = self._first_media(data, ("jpg", "jpeg", "png", "gif"))
             movie = self._first_media(data, ("webm", "mp4"))
         except SteamError:
             pass
 
-        if not image:
-            image = await self._media_from_profile_html(
-                steamid, "profile_background_image_url", ("jpg", "jpeg", "png")
-            ) or await self._media_from_profile_html(steamid, "background_image", ("jpg", "jpeg", "png"))
-        if not movie:
-            movie = await self._media_from_profile_html(steamid, "movie_webm", ("webm",)) or \
-                await self._media_from_profile_html(steamid, "movie_mp4", ("mp4",))
+        # The widget is premium-only: fall back to the public profile page,
+        # where the same CDN links are rendered for every account.
+        page = "" if (image and movie) else await self._profile_page(steamid)
+        if page:
+            if not movie:
+                movie = self._html_class_media(page, "profile_animated_background", ("mp4", "webm"))
+            if not image:
+                image = self._html_background_image(page)
+            if not movie:
+                movie = self._html_class_media(page, "profile_animated_background", ("gif",))
         return {"image": image, "movie": movie}
 
     async def profile_media(self, steamid: str) -> dict[str, str]:
@@ -257,25 +303,57 @@ class SteamClient:
             "background_movie": (background or {}).get("movie", "") if isinstance(background, dict) else "",
         }
 
-    async def _media_from_profile_html(self, steamid: str, field: str, extensions: tuple[str, ...]) -> str:
+    async def _profile_page(self, steamid: str) -> str:
+        """The public profile HTML, cached just long enough for one lookup."""
         try:
-            page = await self._get_text(
+            return await self._get_text(
                 f"{COMMUNITY_API}/profiles/{steamid}/",
-                {"l": "english"},
+                {"l": "russian"},
                 cache_key=f"profile-html:{steamid}",
-                ttl=6 * 3_600,
+                ttl=15 * 60,
+                timeout=MEDIA_TIMEOUT,
             )
         except SteamError:
             return ""
-        patterns = [
-            rf'"{field}"\s*:\s*"([^"]+)"',
-            rf'{field}\s*=\s*"([^"]+)"',
-        ]
-        for pattern in patterns:
-            for match in re.finditer(pattern, page):
-                candidate = match.group(1).replace("\\/", "/")
-                if any(candidate.lower().split("?")[0].endswith("." + ext) for ext in extensions):
-                    return candidate
+
+    @staticmethod
+    def _clean_url(raw: str) -> str:
+        return raw.replace("\\/", "/").replace("&amp;", "&").strip()
+
+    @staticmethod
+    def _is_cdn(url: str) -> bool:
+        host = url.split("//", 1)[-1].split("/", 1)[0].lower()
+        return any(host == cdn or host.endswith("." + cdn) for cdn in CDN_HOSTS)
+
+    @classmethod
+    def _html_class_media(cls, page: str, marker: str, extensions: tuple[str, ...]) -> str:
+        """First `<source>`/`<img>` URL inside the HTML block carrying `marker`."""
+        if not page:
+            return ""
+        for anchor in re.finditer(re.escape(marker), page):
+            block = page[anchor.start(): anchor.start() + 4_000]
+            for tag in HTML_MEDIA_RE.finditer(block):
+                url = cls._clean_url(tag.group(1))
+                clean = url.split("?")[0].lower()
+                if cls._is_cdn(url) and any(clean.endswith("." + ext) for ext in extensions):
+                    return url
+        return ""
+
+    @classmethod
+    def _html_background_image(cls, page: str) -> str:
+        """Static wallpaper from `background-image: url(...)` on the profile."""
+        if not page:
+            return ""
+        for marker in ("has_profile_background", "profile_background_image_url", "background_image"):
+            anchor = page.find(marker)
+            if anchor < 0:
+                continue
+            chunk = page[anchor: anchor + 4_000]
+            match = BG_URL_RE.search(chunk)
+            if match:
+                url = cls._clean_url(match.group(1))
+                if cls._is_cdn(url):
+                    return url
         return ""
 
     @staticmethod
@@ -366,6 +444,167 @@ class SteamClient:
             return [f.get("steamid") for f in friends if f.get("steamid")][:limit]
         except SteamError:
             return []
+
+    # ---------------------------------------------------------------- feed
+
+    async def news_rss(self) -> list[dict[str, Any]]:
+        """Official Steam store news RSS (releases and announcements)."""
+        try:
+            text = await self._get_text(
+                f"{STORE_API}/feeds/news.xml",
+                cache_key="feed:steam-news-rss",
+                ttl=NEWS_FEED_TTL,
+            )
+        except SteamError:
+            return []
+        return self._parse_rss(text, "news", limit=10)
+
+    async def special_deals(self) -> list[dict[str, Any]]:
+        """Current store specials via the JSON the Steam front page uses."""
+        try:
+            data = await self._get_json(
+                f"{STORE_API}/api/featuredcategories",
+                {"cc": "us", "l": "english"},
+                cache_key="feed:steam-specials",
+                ttl=NEWS_FEED_TTL,
+            )
+        except SteamError:
+            return []
+
+        items: list[dict[str, Any]] = []
+        for row in ((data or {}).get("specials") or {}).get("items", [])[:10]:
+            appid = row.get("id")
+            if not appid:
+                continue
+            items.append(
+                {
+                    "kind": "deal",
+                    "title": row.get("name") or "Steam special",
+                    "url": f"{STORE_API}/app/{appid}/",
+                    "appid": int(appid),
+                    "discount": int(row.get("discount_percent") or 0),
+                    "price": int(row.get("final_price") or 0),
+                    "original": int(row.get("original_price") or 0),
+                    "image": row.get("header_image") or "",
+                    "ts": 0,
+                }
+            )
+        return items
+
+    async def _news_one(self, appid: int, per_app: int) -> list[dict[str, Any]]:
+        """Headlines for one app via the official ISteamNews endpoint."""
+        try:
+            data = await self._get_json(
+                f"{STEAM_API}/ISteamNews/GetNewsForApp/v2/",
+                {"appid": int(appid), "count": per_app, "maxlength": 220, "format": "json"},
+                cache_key=f"feed:app-news:{int(appid)}:{per_app}",
+                ttl=NEWS_FEED_TTL,
+            )
+        except SteamError:
+            return []
+        out: list[dict[str, Any]] = []
+        for row in (data or {}).get("appnews", {}).get("newsitems", []):
+            title = (row.get("title") or "").strip()
+            url = (row.get("url") or "").strip()
+            if not title or not url:
+                continue
+            out.append(
+                {
+                    "kind": "game",
+                    "title": title,
+                    "url": url,
+                    "source": row.get("feedlabel") or row.get("feedname") or "Steam",
+                    "ts": int(row.get("date") or 0),
+                }
+            )
+        return out
+
+    async def app_news(self, appids: Iterable[int] = TOP_NEWS_APPS, per_app: int = 2) -> list[dict[str, Any]]:
+        """Fresh news for the biggest games through ISteamNews."""
+        ids = [int(appid) for appid in appids]
+        if not ids:
+            return []
+        chunks = await asyncio.gather(*(self._news_one(appid, per_app) for appid in ids), return_exceptions=True)
+        items: list[dict[str, Any]] = []
+        for chunk in chunks:
+            if isinstance(chunk, list):
+                items.extend(chunk)
+        return items
+
+    async def steam_news(self, appid: Optional[int] = None) -> dict[str, Any]:
+        """Cached news feed for the top marquee with an optional game filter."""
+        if appid:
+            selected = tuple(a for a in NEWS_APPS if a[0] == int(appid)) or ((int(appid), str(int(appid))),)
+            per_app = 12
+        else:
+            selected = NEWS_APPS
+            per_app = 6
+        labels = {aid: name for aid, name in selected}
+        ids = [aid for aid, _ in selected]
+
+        chunks = await asyncio.gather(*(self._news_one(aid, per_app) for aid in ids), return_exceptions=True)
+        items: list[dict[str, Any]] = []
+        for aid, chunk in zip(ids, chunks):
+            if not isinstance(chunk, list):
+                continue
+            for row in chunk:
+                items.append({**row, "appid": aid, "game": labels.get(aid, str(aid))})
+        items.sort(key=lambda row: row.get("ts") or 0, reverse=True)
+        return {
+            "items": items[:40],
+            "apps": [{"appid": aid, "name": name} for aid, name in NEWS_APPS],
+            "updated_at": int(time.time()),
+        }
+
+    async def home_feed(self) -> dict[str, Any]:
+        """Deals first, then store news, then big-game headlines."""
+        deals, store_news, game_news = await asyncio.gather(
+            self.special_deals(),
+            self.news_rss(),
+            self.app_news(),
+            return_exceptions=True,
+        )
+
+        def rows(value: Any) -> list[dict[str, Any]]:
+            return value if isinstance(value, list) else []
+
+        merged = rows(deals) + rows(store_news) + rows(game_news)
+        seen: set[str] = set()
+        items: list[dict[str, Any]] = []
+        for item in merged:
+            url = item.get("url")
+            if not url or url in seen:
+                continue
+            seen.add(url)
+            items.append(item)
+
+        return {"items": items[:24], "updated_at": int(time.time())}
+
+    @staticmethod
+    def _parse_rss(text: str, kind: str, limit: int = 10) -> list[dict[str, Any]]:
+        try:
+            root = ElementTree.fromstring(text)
+        except ElementTree.ParseError:
+            return []
+        items: list[dict[str, Any]] = []
+        for node in root.iter("item"):
+            title = (node.findtext("title") or "").strip()
+            link = (node.findtext("link") or "").strip()
+            if not title or not link:
+                continue
+            ts = 0
+            pub = (node.findtext("pubDate") or "").strip()
+            if pub:
+                try:
+                    ts = int(parsedate_to_datetime(pub).timestamp())
+                except (TypeError, ValueError):
+                    ts = 0
+            items.append(
+                {"kind": kind, "title": title, "url": link, "source": "Steam", "ts": ts}
+            )
+            if len(items) >= limit:
+                break
+        return items
 
     # --------------------------------------------------------------- store
 

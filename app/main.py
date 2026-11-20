@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import threading
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -79,6 +80,51 @@ app.add_middleware(
     allow_methods=["GET"],
     allow_headers=["*"],
 )
+
+
+# --------------------------------------------------- light anti-flood guard
+#
+# The site sits behind Cloudflare, so the real visitor IP arrives in
+# `CF-Connecting-IP`; direct/free-tier traffic falls back to
+# `X-Forwarded-For`, and finally to the socket address. Only the JSON API is
+# throttled — static files, the home page and favicons stay untouched.
+
+RATE_LIMIT_PER_MIN = _env_int("RATE_LIMIT_PER_MIN", 35)
+RATE_WINDOW = 60.0
+_rate_hits: dict[str, list[float]] = {}
+_rate_lock = threading.Lock()
+
+
+def _client_ip(request: Request) -> str:
+    cf = request.headers.get("cf-connecting-ip")
+    if cf:
+        return cf.strip()
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
+
+
+@app.middleware("http")
+async def rate_limiter(request: Request, call_next):
+    if request.url.path.startswith("/api/"):
+        ip = _client_ip(request)
+        now = time.time()
+        with _rate_lock:
+            hits = [t for t in (_rate_hits.get(ip) or []) if now - t < RATE_WINDOW]
+            if len(hits) >= RATE_LIMIT_PER_MIN:
+                _rate_hits[ip] = hits
+                return JSONResponse(
+                    status_code=429,
+                    content={"detail": "Слишком много запросов. Подождите 10 секунд."},
+                )
+            hits.append(now)
+            _rate_hits[ip] = hits
+            # Keep the in-memory table bounded on the 512 MB free tier.
+            if len(_rate_hits) > 4_000:
+                for key in [k for k, v in _rate_hits.items() if not v or now - v[-1] > RATE_WINDOW]:
+                    _rate_hits.pop(key, None)
+    return await call_next(request)
 
 
 # --------------------------------------------------------------------- helpers
@@ -294,6 +340,36 @@ def _hall_payload(request: Request) -> dict[str, Any]:
     }
 
 
+@app.get("/api/steam-feed")
+async def steam_feed(request: Request) -> dict[str, Any]:
+    """Deals, store news and big-game headlines for the top marquee.
+
+    Everything is cached for 15 minutes inside the Steam client and the
+    endpoint is deliberately forgiving: the marquee is decorative.
+    """
+    try:
+        payload = await request.app.state.steam.home_feed()
+    except Exception:  # noqa: BLE001 - never break the page over a feed
+        payload = {"items": [], "updated_at": int(time.time())}
+    return payload
+
+
+@app.get("/api/steam-news")
+async def steam_news(
+    request: Request,
+    appid: Optional[int] = Query(None, description="Filter by a single app id"),
+) -> dict[str, Any]:
+    """Fresh official Steam news for the top games (ISteamNews/GetNewsForApp).
+
+    Cached for 15 minutes inside the client. `appid` narrows the feed to one
+    game; without it the default set (CS2, Dota 2, Rust, TF2) is returned.
+    """
+    try:
+        return await request.app.state.steam.steam_news(appid)
+    except Exception:  # noqa: BLE001 - the news bar must never break the page
+        return {"items": [], "apps": [], "updated_at": int(time.time())}
+
+
 @app.get("/api/hall-of-fame")
 async def hall_of_fame(request: Request) -> dict[str, Any]:
     return _hall_payload(request)
@@ -351,6 +427,28 @@ async def cache_stats(request: Request) -> dict[str, Any]:
 @app.get("/")
 async def index() -> FileResponse:
     return FileResponse(BASE_DIR / "index.html", headers={"Cache-Control": "no-store"})
+
+
+@app.get("/favicon.svg")
+async def favicon_svg() -> FileResponse:
+    return FileResponse(
+        BASE_DIR / "static" / "favicon.svg",
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=604800"},
+    )
+
+
+@app.get("/favicon.png")
+async def favicon_png() -> FileResponse:
+    """Serve the SVG when no raster icon has been generated yet."""
+    png = BASE_DIR / "static" / "favicon.png"
+    if png.exists():
+        return FileResponse(png, media_type="image/png", headers={"Cache-Control": "public, max-age=604800"})
+    return FileResponse(
+        BASE_DIR / "static" / "favicon.svg",
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=604800"},
+    )
 
 
 @app.get("/index.html")

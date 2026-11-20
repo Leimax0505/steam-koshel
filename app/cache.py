@@ -20,9 +20,18 @@ from typing import Any, Optional
 
 
 class Cache:
-    def __init__(self, path: str | Path = "cache.db", ttl: int = 86_400) -> None:
+    # The free Render tier only has 512 MB of RAM, so the in-process fast path
+    # is hard-capped: once we cross the limit the oldest / expired rows are
+    # dropped before new ones are stored. SQLite keeps the durable copy.
+    def __init__(
+        self,
+        path: str | Path = "cache.db",
+        ttl: int = 86_400,
+        max_entries: int = 180,
+    ) -> None:
         self.path = Path(path)
         self.ttl = int(ttl)
+        self.max_entries = max(40, int(max_entries))
         self._mem: dict[str, tuple[Any, float]] = {}
         self._lock = threading.Lock()
         self._db = sqlite3.connect(str(self.path), check_same_thread=False)
@@ -67,6 +76,7 @@ class Cache:
         payload = json.dumps(value, ensure_ascii=False, separators=(",", ":"))
         with self._lock:
             self._mem[key] = (value, expires)
+            self._trim_locked()
             self._db.execute(
                 "INSERT INTO kv (key, value, expires) VALUES (?, ?, ?) "
                 "ON CONFLICT(key) DO UPDATE SET value = excluded.value, "
@@ -74,6 +84,19 @@ class Cache:
                 (key, payload, expires),
             )
             self._db.commit()
+
+    def _trim_locked(self) -> None:
+        """Keep the in-memory dict small: drop expired rows, then the oldest."""
+        now = time.time()
+        expired = [k for k, row in self._mem.items() if row[1] <= now]
+        for key in expired:
+            self._mem.pop(key, None)
+        if len(self._mem) <= self.max_entries:
+            return
+        # Oldest expiry first — the rows closest to falling out anyway.
+        ordered = sorted(self._mem.items(), key=lambda item: item[1][1])
+        for key, _ in ordered[: len(self._mem) - self.max_entries]:
+            self._mem.pop(key, None)
 
     def delete(self, key: str) -> None:
         with self._lock:
@@ -134,8 +157,16 @@ class Cache:
         with self._lock:
             kv = self._db.execute("SELECT COUNT(*) FROM kv").fetchone()[0]
             prices = self._db.execute("SELECT COUNT(*) FROM prices").fetchone()[0]
+            mem = len(self._mem)
         size = self.path.stat().st_size if self.path.exists() else 0
-        return {"kv_rows": kv, "price_rows": prices, "size_bytes": size, "ttl": self.ttl}
+        return {
+            "kv_rows": kv,
+            "price_rows": prices,
+            "mem_rows": mem,
+            "mem_max": self.max_entries,
+            "size_bytes": size,
+            "ttl": self.ttl,
+        }
 
     def close(self) -> None:
         with self._lock:

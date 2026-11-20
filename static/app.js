@@ -255,22 +255,38 @@
     friendsTitle: ['Идеальный напарник', 'The perfect co-op partner', '完美队友'],
     friendsSub: ['Совместимость по общим несыгранным кооперативным играм', 'Chemistry from shared unplayed co-op games', '基于共同未玩的合作游戏计算契合度'],
     friendsEmpty: ['Список друзей закрыт или пуст.', 'The friend list is private or empty.', '好友列表未公开或为空。'],
-    friendsDrag: ['Перетащи друга, чтобы поставить его выше в списке.', 'Drag a friend to move them up the list.', '拖动好友可调整顺序。'],
+    friendsDrag: ['Перетащи друга в слот Игрока 1 или Игрока 2. Правый клик — быстрые действия.', 'Drag a friend into Player 1 or Player 2. Right-click for quick actions.', '把好友拖到玩家 1 或玩家 2 的槽位，右键查看更多操作。'],
+    rivalDrop: ['Перетащи друга сюда', 'Drop a friend here', '把好友拖到这里'],
+    menuSlotA: ['Поставить в Игрока 1', 'Set as Player 1', '设为玩家 1'],
+    menuSlotB: ['Поставить в Игрока 2', 'Set as Player 2', '设为玩家 2'],
+    menuOpenSteam: ['Открыть профиль', 'Open profile', '打开资料'],
+    duelPlayer1: ['Игрок 1', 'Player 1', '玩家 1'],
+    duelPlayer2: ['Игрок 2', 'Player 2', '玩家 2'],
+    duelYou: ['Ты', 'You', '你'],
+    duelDrop: ['Перетащи друга', 'Drop a friend', '拖入好友'],
+    duelNeedTwo: ['Заполни оба слота, чтобы начать баттл.', 'Fill both slots to start the battle.', '填满两个槽位即可开始对战。'],
     compat: ['совместимость', 'chemistry', '契合度'],
     sharedGames: ['{n} общих игр', '{n} shared games', '{n} 款共同游戏'],
 
-    hallTitle: ['Зал славы', 'Hall of fame', '名人堂'],
-    hallLibrary: ['Самая дорогая библиотека', 'Priciest library', '最贵游戏库'],
-    hallInventory: ['Самый дорогой инвентарь', 'Priciest inventory', '最贵库存'],
-    hallHours: ['Больше всего часов', 'Most hours', '最长时长'],
-    hallRarity: ['Редчайший трофей', 'Rarest trophy', '最稀有成就'],
-    hallGames: ['Больше всего игр', 'Most games', '最多游戏'],
-    hallPriciest: ['Самая дорогая игра', 'Priciest game', '最贵游戏'],
-    hallEmpty: ['Проверь первый профиль — рекорд появится здесь.', 'Check the first profile — its record lands here.', '查看第一个档案，纪录会出现在这里。'],
-    hallLive: ['живой поток', 'live feed', '实时'],
-    eventCheck: ['проверил профиль', 'checked a profile', '查看了档案'],
-    eventTrophy: ['получил трофей', 'earned a trophy', '获得了成就'],
-    eventGame: ['самая дорогая игра', 'priciest game', '最贵游戏'],
+    feedLabel: ['Steam · новости и скидки', 'Steam · news & deals', 'Steam · 新闻与折扣'],
+    feedEmpty: ['Свежие новости и скидки Steam появятся здесь.', 'Fresh Steam news and deals will appear here.', '最新的 Steam 新闻与折扣会出现在这里。'],
+    feedDeal: ['скидка', 'deal', '折扣'],
+    feedNews: ['новость', 'news', '新闻'],
+    feedGame: ['игра', 'game', '游戏'],
+    feedFree: ['бесплатно', 'free', '免费'],
+    feedAll: ['Все новости', 'All news', '全部新闻'],
+    feedCollapse: ['Свернуть ленту', 'Collapse the feed', '收起新闻栏'],
+    feedExpand: ['Развернуть ленту', 'Expand the feed', '展开新闻栏'],
+
+    navOverview: ['Обзор', 'Overview', '概览'],
+    navPassport: ['Паспорт', 'Passport', '护照'],
+    navGames: ['Игры', 'Games', '游戏'],
+    navInventory: ['Инвентарь', 'Inventory', '库存'],
+    navTrophies: ['Трофеи', 'Trophies', '成就'],
+    navTracker: ['Трекер онлайна', 'Online tracker', '在线追踪'],
+    navFriends: ['Друзья', 'Friends', '好友'],
+
+    localTime: ['Местное время: {tz} ({off})', 'Local time: {tz} ({off})', '本地时间：{tz} ({off})'],
 
     passportTitle: ['Digital Passport', 'Digital Passport', '数字护照'],
     passportSub: ['Коллекционная карточка профиля. Скачай PNG или вставь BB-код в витрину Steam.',
@@ -445,7 +461,12 @@
     source: 'none',
     pickIndex: 0,
     compare: null,
+    duel: { a: null, b: null },
+    feedGame: '',
+    feedCollapsed: store('sk_feed_collapsed') === '1',
     dragFriend: '',
+    dragPersona: '',
+    dragAvatar: '',
     lastQuery: ''
   };
 
@@ -578,6 +599,40 @@
     return state.lang === 'ru' ? row[0] : state.lang === 'zh' ? row[2] : row[1];
   }
 
+  /* ---- local-time helpers for the online tracker -------------------------
+   * Activity is stored in server (UTC) hours; every visitor should see it in
+   * their own timezone, so the 24-hour profile is rotated by their offset. */
+
+  function localOffsetMinutes() {
+    return -new Date().getTimezoneOffset(); /* minutes east of UTC, e.g. +300 */
+  }
+
+  function localZoneLabel() {
+    var off = localOffsetMinutes();
+    var abs = Math.abs(off);
+    var hh = Math.floor(abs / 60);
+    var mm = abs % 60;
+    var offset = 'UTC' + (off >= 0 ? '+' : '-') + hh + (mm ? ':' + ('0' + mm).slice(-2) : '');
+    var name = '';
+    try { name = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) { name = ''; }
+    return { name: name, offset: offset };
+  }
+
+  function shiftHoursUTC(arr, offsetMinutes) {
+    var shift = (offsetMinutes || 0) / 60;
+    var out = [];
+    for (var i = 0; i < 24; i++) out.push(0);
+    for (var h = 0; h < 24; h++) {
+      var target = (((h + shift) % 24) + 24) % 24;
+      var lo = Math.floor(target);
+      var hi = (lo + 1) % 24;
+      var frac = target - lo;
+      out[lo] += arr[h] * (1 - frac);
+      if (frac > 0.0001) out[hi] += arr[h] * frac;
+    }
+    return out;
+  }
+
   function buildModel(raw) {
     var games = raw.games.slice();
     var profile = raw.profile || {};
@@ -637,8 +692,10 @@
     var antiHype = clamp(Math.round(100 - trendShare * 78 + (olderGems / (hours || 1)) * 34), 4, 98);
     var hypeLabel = antiHype >= 62 ? 'hypeHidden' : antiHype >= 38 ? 'hypeBalanced' : 'hypeTrend';
 
-    /* rhythm */
-    var hourly = raw.hourly && raw.hourly.length === 24 ? raw.hourly.slice() : makeRhythm(profile.steamid, hours, seed);
+    /* rhythm — activity arrives in server (UTC) hours, so shift it to the
+       visitor's own timezone before anything is computed from it */
+    var baseHourly = raw.hourly && raw.hourly.length === 24 ? raw.hourly.slice() : makeRhythm(profile.steamid, hours, seed);
+    var hourly = shiftHoursUTC(baseHourly, localOffsetMinutes());
     var peakHour = hourly.indexOf(Math.max.apply(null, hourly));
     var nightShare = sum([22, 23, 0, 1, 2, 3].map(function (h) { return hourly[h]; })) / (sum(hourly) || 1);
     var rhythmLabel = (peakHour >= 21 || peakHour <= 4) ? 'nightOwl'
@@ -725,6 +782,7 @@
       friends: friends,
       yearly: yearly,
       hourly: hourly,
+      tz: localZoneLabel(),
       peakHour: peakHour,
       peakShare: peakShare,
       nightShare: nightShare,
@@ -1110,8 +1168,8 @@
       (opt.foot ? '<div class="card__foot">' + opt.foot + '</div>' : '') + '</section>';
   }
 
-  function stat(span, label, value, delta, foot, cls) {
-    return '<section class="card ' + (cls || '') + ' s' + span + '">' +
+  function stat(span, label, value, delta, foot, cls, id) {
+    return '<section class="card ' + (cls || '') + ' s' + span + '"' + (id ? ' id="' + id + '"' : '') + '>' +
       '<div class="card__body" style="display:flex;flex-direction:column;gap:10px">' +
       '<div class="stat__label">' + label + '</div>' +
       '<div class="stat__value">' + value + '</div>' +
@@ -1134,8 +1192,14 @@
     return mc >= 85 ? 'game__mc--great' : mc >= 70 ? 'game__mc--good' : 'game__mc--mixed';
   }
 
-  function avatarHtml(url, name, cls) {
+  function avatarHtml(url, name, cls, movie) {
     var initials = esc((name || '?').slice(0, 1).toUpperCase());
+    var anim = String(movie || '');
+    if (/\.webm(\?|$)|\.mp4(\?|$)/i.test(anim)) {
+      return '<video autoplay loop muted playsinline poster="' + esc(url || '') + '">' +
+        '<source src="' + esc(anim) + '" type="' + (/\.webm(\?|$)/i.test(anim) ? 'video/webm' : 'video/mp4') + '">' +
+        '</video>';
+    }
     if (url) return '<img src="' + esc(url) + '" alt="" onerror="this.parentNode.innerHTML=\'<span>' + initials + '</span>\'">';
     return '<span>' + initials + '</span>';
   }
@@ -1194,12 +1258,30 @@
    * ------------------------------------------------------------------ */
 
   function setProfileBackdrop(p) {
-    var bg = (p && p.background) || '';
-    document.body.classList.toggle('has-profile-bg', !!bg);
-    if (bg) {
-      document.documentElement.style.setProperty('--profile-bg', 'url("' + bg.replace(/"/g, '%22') + '")');
-    } else {
-      document.documentElement.style.removeProperty('--profile-bg');
+    var image = (p && p.background) || '';
+    var movie = (p && p.background_movie) || '';
+    var imageNode = $('#backdropImage');
+    var video = $('#backdropVideo');
+    var hasBg = !!(image || movie);
+
+    document.body.classList.toggle('has-profile-bg', hasBg);
+    document.body.classList.toggle('has-profile-movie', !!movie);
+
+    if (imageNode) {
+      imageNode.style.backgroundImage = image ? 'url("' + image.replace(/"/g, '%22') + '")' : '';
+    }
+    if (video) {
+      if (movie && video.getAttribute('src') !== movie) {
+        video.setAttribute('src', movie);
+        try { video.load(); } catch (e) { /* autoplay is best-effort */ }
+      }
+      if (movie) {
+        var play = video.play();
+        if (play && play.catch) play.catch(function () { /* muted autoplay is fine to skip */ });
+      } else if (video.getAttribute('src')) {
+        try { video.pause(); } catch (e) { /* ignore */ }
+        video.removeAttribute('src');
+      }
     }
   }
 
@@ -1266,7 +1348,7 @@
       money(m.money.sale) + ' ' + t('ofLibrary') + ' + ' + money(m.money.inventory));
 
     if (invHidden) {
-      html += '<section class="card s3"><div class="card__body" style="display:flex;flex-direction:column;gap:10px">' +
+      html += '<section class="card s3" id="inventoryCard"><div class="card__body" style="display:flex;flex-direction:column;gap:10px">' +
         '<div class="stat__label">' + t('oInventory') + '</div>' +
         '<div class="stat__value" style="font-size:22px">' + t('inventoryHidden') + '</div>' +
         '<div class="stat__row"><span class="badge badge--warn">' + t('inventoryHidden') + '</span></div>' +
@@ -1275,7 +1357,7 @@
       html += stat(3, t('oInventory'),
         count(0, m.money.inventory, 'money'),
         '<span class="stat__delta stat__delta--neutral">' + num(m.inventoryTotal || m.inventory.length) + ' ' + t('itemsWord') + '</span>',
-        m.inventory.length ? esc(m.inventory[0].name) : t('inventoryEmpty'));
+        m.inventory.length ? esc(m.inventory[0].name) : t('inventoryEmpty'), '', 'inventoryCard');
     }
 
     /* curator */
@@ -1327,10 +1409,14 @@
         '<span class="badge">' + esc(genreName(m.topGenre.name)) + ' · ' + Math.round(m.topGenre.share * 100) + '%</span>'
     });
 
-    /* rhythm */
+    /* rhythm — the online tracker, shown in the visitor's local timezone */
     var maxH = Math.max.apply(null, m.hourly) || 1;
+    var tzLabel = m.tz && m.tz.name
+      ? t('localTime', { tz: m.tz.name, off: m.tz.offset })
+      : t('localTime', { tz: m.tz ? m.tz.offset : 'UTC', off: m.tz ? m.tz.offset : 'UTC' });
     html += card({
       span: 4,
+      id: 'rhythmCard',
       title: t('rhythmTitle'),
       hint: t(m.rhythmLabel),
       aside: '<span class="badge">' + m.peakHour + ':00</span>',
@@ -1338,7 +1424,8 @@
         return '<span class="rhythm__col ' + (i === m.peakHour ? 'is-peak' : '') + '"><i style="height:' + Math.max(3, Math.round((v / maxH) * 100)) + '%"></i></span>';
       }).join('') + '</div>' +
         '<div class="rhythm__scale"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>23:00</span></div>' +
-        '<p class="tiny muted" style="margin-top:10px">' + t('rhythmNote', { h: m.peakHour, p: m.peakShare }) + '</p>'
+        '<p class="tiny muted rhythm__tz" style="margin-top:10px">' + esc(tzLabel) + '</p>' +
+        '<p class="tiny muted" style="margin-top:6px">' + t('rhythmNote', { h: m.peakHour, p: m.peakShare }) + '</p>'
     });
 
     /* account cleanliness */
@@ -1411,18 +1498,6 @@
         progress(unplayedPct, 'progress--thin') +
         '<div class="progress__caption"><span>' + m.totals.never + ' / ' + m.totals.games + '</span><span>' + unplayedPct + '%</span></div>',
       foot: '<span class="tiny">' + t('backlogNote') + '</span>'
-    });
-
-    /* passport promo */
-    html += card({
-      span: 12,
-      cls: 'card--accent',
-      body: '<div class="promo">' +
-        '<div><div class="stat__label">' + t('passportCode') + '</div>' +
-        '<div class="promo__code">' + serialFor(m) + '</div></div>' +
-        '<p class="promo__text tiny muted">' + t('passportSub') + '</p>' +
-        '<button class="btn btn--primary btn--sm" type="button" data-action="passport">' + t('passport') + '</button>' +
-        '</div>'
     });
 
     $('#viewOverview').innerHTML = '<div class="bento">' + html + '</div>';
@@ -1680,16 +1755,26 @@
       title: t('socialCompareTitle'),
       hint: t('socialCompareSub'),
       body:
-        '<div class="compare-inputs">' +
-        '<div class="field"><label>' + t('compareYou') + '</label>' +
-        '<input class="input" id="cmpA" value="' + esc(m.profile.persona || '') + '" readonly></div>' +
-        '<div class="duel__vs" style="margin-bottom:4px">VS</div>' +
-        '<div class="field"><label>' + t('compareFriend') + '</label>' +
-        '<input class="input" id="cmpB" placeholder="' + t('comparePlaceholder') + '"></div>' +
+        '<div class="compare-zone" id="rivalZone">' +
+        '<div class="duel-slots">' +
+        '<div class="duel-slot" data-slot="a" id="duelSlotA">' +
+        '<span class="duel-slot__tag">' + t('duelPlayer1') + '</span>' +
+        '<span class="duel-slot__ava" id="duelAvaA"></span>' +
+        '<span class="duel-slot__body"><b id="duelNameA">—</b><small id="duelHintA">' + t('duelYou') + '</small></span>' +
         '</div>' +
-        '<div class="row" style="margin-top:12px">' +
+        '<span class="duel__vs">VS</span>' +
+        '<div class="duel-slot" data-slot="b" id="duelSlotB">' +
+        '<span class="duel-slot__tag">' + t('duelPlayer2') + '</span>' +
+        '<span class="duel-slot__ava" id="duelAvaB"></span>' +
+        '<span class="duel-slot__body"><b id="duelNameB">—</b><small id="duelHintB">' + t('rivalDrop') + '</small></span>' +
+        '</div>' +
+        '</div>' +
+        '<div class="rival-manual">' +
+        '<div class="field"><label>' + t('compareFriend') + '</label>' +
+        '<input class="input" id="rivalInput" placeholder="' + t('comparePlaceholder') + '"></div>' +
         '<button class="btn btn--primary btn--sm" type="button" data-action="compare">' + t('compareBtn') + '</button>' +
-        '<span class="tiny muted">' + t('comparePlaceholder') + '</span>' +
+        '</div>' +
+        '<p class="tiny muted rival-drop">' + t('friendsDrag') + '</p>' +
         '</div>' +
         '<div id="compareResult"></div>'
     });
@@ -1702,11 +1787,13 @@
       body: m.friends.length
         ? '<p class="tiny muted" style="margin-bottom:10px">' + t('friendsDrag') + '</p>' +
           '<div class="friends friends--scroll" id="friendsList">' + m.friends.map(function (f, i) {
-            var fid = String(f.steamid || i);
+            var sid = String(f.steamid || '');
+            var key = sid || String(i);
             var score = f.compat == null ? '—' : f.compat + '%';
-            return '<div class="friend" draggable="true" data-friend="' + esc(fid) + '">' +
-              '<span class="friend__grip" aria-hidden="true">⋮⋮</span>' +
-              '<span class="friend__ava">' + avatarHtml(f.avatar, f.persona) + '</span>' +
+            return '<div class="friend" draggable="true" data-friend="' + esc(key) + '"' +
+              ' data-persona="' + esc(f.persona || '') + '"' +
+              ' data-avatar="' + esc(f.avatar || '') + '">' +
+              '<span class="friend__ava">' + avatarHtml(f.avatar, f.persona, '', f.avatar_animated) + '</span>' +
               '<div style="min-width:0"><div class="friend__name">' + esc(f.persona) + '</div>' +
               '<div class="friend__sub">' + t('sharedGames', { n: f.shared.length }) + (f.shared.length ? ' · ' + esc(f.shared.slice(0, 2).join(', ')) : '') + '</div></div>' +
               '<div class="friend__score"><b>' + score + '</b><small>' + t('compat') + '</small></div>' +
@@ -1716,75 +1803,156 @@
     });
 
     $('#viewSocial').innerHTML = '<div class="bento">' + html + '</div>';
-  }
-
-  function reorderFriends(fromId, toId) {
-    var m = state.model;
-    if (!m || !m.friends || fromId === toId) return false;
-    var from = -1, to = -1;
-    m.friends.forEach(function (f, i) {
-      var id = String(f.steamid || i);
-      if (id === fromId) from = i;
-      if (id === toId) to = i;
-    });
-    if (from < 0 || to < 0) return false;
-    var moved = m.friends.splice(from, 1)[0];
-    m.friends.splice(to, 0, moved);
-    return true;
+    if (!state.duel.a) state.duel.a = state.model;
+    updateDuelSlots();
   }
 
   /* ------------------------------------------------------------------ *
-   * 14. hall-of-fame ticker
+   * 13b. friend context menu
    * ------------------------------------------------------------------ */
 
-  function hallValue(row) {
-    if (row.kind === 'money') return money(row.value);
-    if (row.kind === 'hours') return num(Math.round(row.value)) + ' ' + t('hoursShort');
-    if (row.kind === 'percent') return fmtBy('percent', row.value);
-    return num(row.value);
+  function closeFriendMenu() {
+    var menu = $('#friendMenu');
+    if (menu) menu.remove();
   }
 
-  function hallTitleFor(category) {
-    var map = {
-      library: 'hallLibrary',
-      inventory: 'hallInventory',
-      hours: 'hallHours',
-      rarity: 'hallRarity',
-      games: 'hallGames',
-      priciest: 'hallPriciest'
-    };
-    return t(map[category] || 'hallTitle');
+  function openFriendMenu(steamid, persona, avatar, x, y) {
+    closeFriendMenu();
+    var menu = document.createElement('div');
+    menu.className = 'ctx-menu';
+    menu.id = 'friendMenu';
+    menu.setAttribute('role', 'menu');
+    menu.__steamid = steamid;
+    menu.__persona = persona || '';
+    menu.__avatar = avatar || '';
+    menu.innerHTML =
+      '<div class="ctx-menu__head">' + esc(persona || steamid) + '</div>' +
+      '<button type="button" role="menuitem" data-friend-cmd="slotA">' + esc(t('menuSlotA')) + '</button>' +
+      '<button type="button" role="menuitem" data-friend-cmd="slotB">' + esc(t('menuSlotB')) + '</button>' +
+      '<button type="button" role="menuitem" data-friend-cmd="open">' + esc(t('menuOpenSteam')) + '</button>';
+    document.body.appendChild(menu);
+    var w = menu.offsetWidth;
+    var h = menu.offsetHeight;
+    menu.style.left = Math.max(12, Math.min(x, window.innerWidth - w - 12)) + 'px';
+    menu.style.top = Math.max(12, Math.min(y, window.innerHeight - h - 12)) + 'px';
   }
+
+  function runFriendCommand(cmd) {
+    var menu = $('#friendMenu');
+    var steamid = menu ? menu.__steamid : '';
+    var persona = menu ? menu.__persona : '';
+    var avatar = menu ? menu.__avatar : '';
+    closeFriendMenu();
+    if (!steamid) return;
+    if (cmd === 'slotA') setDuelSlot('a', steamid, persona, avatar);
+    else if (cmd === 'slotB') setDuelSlot('b', steamid, persona, avatar);
+    else if (cmd === 'open') analyze(steamid);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 13c. duel slots — drop a friend into Player 1 / Player 2
+   * ------------------------------------------------------------------ */
+
+  function duelSelf() {
+    return state.model && state.model.profile ? String(state.model.profile.steamid || '') : '';
+  }
+
+  function updateDuelSlots() {
+    [['a', '#duelNameA', '#duelHintA', '#duelAvaA'], ['b', '#duelNameB', '#duelHintB', '#duelAvaB']].forEach(function (row) {
+      var fighter = state.duel[row[0]];
+      var nameNode = $(row[1]);
+      var hintNode = $(row[2]);
+      var avaNode = $(row[3]);
+      if (!nameNode) return;
+      var profile = fighter && fighter.profile;
+      if (profile) {
+        var isSelf = String(profile.steamid || '') && String(profile.steamid) === duelSelf();
+        nameNode.textContent = profile.persona || 'Steam';
+        if (hintNode) {
+          hintNode.textContent = isSelf ? t('duelYou')
+            : (fighter.totals ? num(fighter.totals.games) + ' ' + t('gamesWord') : '');
+        }
+        if (avaNode) avaNode.innerHTML = avatarHtml(profile.avatar, profile.persona, '', profile.avatar_animated);
+      } else {
+        nameNode.textContent = '—';
+        if (hintNode) hintNode.textContent = row[0] === 'a' ? t('duelYou') : t('duelDrop');
+        if (avaNode) avaNode.innerHTML = '';
+      }
+    });
+  }
+
+  function afterDuelChange() {
+    updateDuelSlots();
+    var a = state.duel.a;
+    var b = state.duel.b;
+    var host = $('#compareResult');
+    if (a && b && a.totals && b.totals) {
+      state.compare = { a: a, b: b };
+      renderCompare(a, b);
+    } else {
+      state.compare = null;
+      if (host) host.innerHTML = '<div class="note" style="margin-top:14px">' + t('duelNeedTwo') + '</div>';
+    }
+    syncView();
+  }
+
+  function setDuelSlot(slot, steamid, persona, avatar) {
+    if (!state.model) { toast(t('toastNoProfile'), 'warn'); return; }
+    if (!API_BASE) { toast(t('toastSteamDown'), 'warn'); return; }
+    if (state.view !== 'social') setView('social');
+
+    var zone = $('#rivalZone');
+    if (zone) {
+      try { zone.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { zone.scrollIntoView(); }
+    }
+
+    /* keep a valid counterpart so a single drop always yields a real battle */
+    if (slot === 'b' && !state.duel.a) state.duel.a = state.model;
+    if (slot === 'a' && !state.duel.b) state.duel.b = state.model;
+
+    if (duelSelf() && String(steamid) === duelSelf()) {
+      state.duel[slot] = state.model;
+      afterDuelChange();
+      return;
+    }
+
+    var host = $('#compareResult');
+    if (host) host.innerHTML = '<div class="note" style="margin-top:14px">' + esc(t('curatorThinking')) + '</div>';
+    fetchLive(steamid).then(function (data) {
+      state.duel[slot] = buildModel(hydrate(data));
+      afterDuelChange();
+    }).catch(function () {
+      state.duel[slot] = {
+        profile: { steamid: steamid, persona: persona || 'Steam friend', avatar: avatar || '', avatar_animated: '' }
+      };
+      updateDuelSlots();
+      toast(t('toastSteamDown'), 'warn');
+    });
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 14. steam news & deals ticker
+   * ------------------------------------------------------------------ */
 
   function renderTicker(data) {
     var track = $('#hallTrack');
     var ticker = $('#hallTicker');
     if (!track || !ticker) return;
-    var records = (data && data.records) || [];
-    var events = (data && data.events) || [];
+    var items = (data && data.items) || [];
     var html = '';
 
-    records.forEach(function (row) {
-      html += '<button class="tick-card" type="button" data-steamid="' + esc(row.steamid || '') + '">' +
-        '<span class="tick-card__k">' + esc(hallTitleFor(row.category)) + '</span>' +
-        '<span class="tick-card__v">' + esc(hallValue(row)) + '</span>' +
-        '<span class="tick-card__who">' + esc(row.persona || 'player') +
-        (row.detail ? ' · ' + esc(row.detail) : '') + '</span>' +
-        '</button>';
-    });
-
-    events.slice(0, 10).forEach(function (ev) {
-      var key = ev.type === 'trophy' ? 'eventTrophy' : ev.type === 'game' ? 'eventGame' : 'eventCheck';
-      html += '<button class="tick-event" type="button" data-steamid="' + esc(ev.steamid || '') + '">' +
-        '<span class="tick-event__dot"></span>' +
-        '<b>' + esc(ev.persona || 'player') + '</b> ' + esc(t(key)) +
-        (ev.detail ? ' · ' + esc(ev.detail) : '') +
-        '</button>';
+    items.forEach(function (row) {
+      if (!row || !row.url) return;
+      var badge = row.game || t('feedNews');
+      html += '<a class="tick-news" href="' + esc(row.url) + '" target="_blank" rel="noopener noreferrer">' +
+        '<span class="tick-news__k">' + esc(badge) + '</span>' +
+        '<span class="tick-news__t">' + esc(row.title || '') + '</span>' +
+        '</a>';
     });
 
     if (!html) {
       ticker.classList.add('is-empty');
-      track.innerHTML = '<span class="tick-empty">' + esc(t('hallEmpty')) + '</span>';
+      track.innerHTML = '<span class="tick-empty">' + esc(t('feedEmpty')) + '</span>';
       return;
     }
 
@@ -1793,11 +1961,45 @@
     track.innerHTML = html + html;
   }
 
-  function loadHall() {
+  function renderFeedPick(apps) {
+    var pick = $('#feedPick');
+    if (!pick) return;
+    var current = state.feedGame || '';
+    var html = '<option value="">' + esc(t('feedAll')) + '</option>';
+    (apps || []).forEach(function (a) {
+      html += '<option value="' + esc(a.appid) + '">' + esc(a.name) + '</option>';
+    });
+    pick.innerHTML = html;
+    pick.value = current;
+    /* the saved filter may not exist for this profile — fall back to «all» */
+    if (pick.value !== current) {
+      pick.value = '';
+      state.feedGame = '';
+    }
+  }
+
+  function applyFeedCollapsed() {
+    var ticker = $('#hallTicker');
+    var btn = $('#feedToggle');
+    if (ticker) ticker.classList.toggle('is-collapsed', !!state.feedCollapsed);
+    if (btn) {
+      var label = t(state.feedCollapsed ? 'feedExpand' : 'feedCollapse');
+      btn.textContent = state.feedCollapsed ? '⌄' : '⌃';
+      btn.setAttribute('title', label);
+      btn.setAttribute('aria-label', label);
+    }
+  }
+
+  function loadFeed() {
     if (!API_BASE) return;
-    fetch(API_BASE + '/hall-of-fame', { headers: { Accept: 'application/json' } })
+    var url = API_BASE + '/steam-news' + (state.feedGame ? '?appid=' + encodeURIComponent(state.feedGame) : '');
+    fetch(url, { headers: { Accept: 'application/json' } })
       .then(function (res) { return res.ok ? res.json() : null; })
-      .then(function (data) { if (data) renderTicker(data); })
+      .then(function (data) {
+        if (!data) return;
+        renderFeedPick(data.apps);
+        renderTicker(data);
+      })
       .catch(function () { /* the ticker is decorative — never break the page */ });
   }
 
@@ -1825,11 +2027,11 @@
     host.innerHTML =
       '<div class="duel">' +
       '<div class="duel__head">' +
-      '<div class="duel__side"><span class="duel__ava">' + (a.profile.avatar ? '<img src="' + esc(a.profile.avatar) + '" style="width:100%;height:100%;object-fit:cover" alt="">' : esc((a.profile.persona || '?').slice(0, 1))) + '</span>' +
+      '<div class="duel__side"><span class="duel__ava">' + profileAvatarHtml(a.profile) + '</span>' +
       '<div style="min-width:0"><div class="duel__name">' + esc(a.profile.persona) + '</div><div class="duel__meta">' + meta(a) + '</div></div></div>' +
       '<span class="duel__vs">VS</span>' +
       '<div class="duel__side duel__side--r"><div style="min-width:0"><div class="duel__name">' + esc(b.profile.persona) + '</div><div class="duel__meta">' + meta(b) + '</div></div>' +
-      '<span class="duel__ava">' + (b.profile.avatar ? '<img src="' + esc(b.profile.avatar) + '" style="width:100%;height:100%;object-fit:cover" alt="">' : esc((b.profile.persona || '?').slice(0, 1))) + '</span></div>' +
+      '<span class="duel__ava">' + profileAvatarHtml(b.profile) + '</span></div>' +
       '</div>' +
       rows.map(function (r) {
         var total = (r.a + r.b) || 1;
@@ -2192,15 +2394,102 @@
     runCountUps($('#results'));
   }
 
+  function markNav(name) {
+    $$('.side-tab').forEach(function (b) {
+      b.classList.toggle('is-active', b.getAttribute('data-nav') === name);
+    });
+  }
+
   function syncView() {
     $$('.view').forEach(function (v) { v.hidden = v.getAttribute('data-view') !== state.view; });
-    $$('.side-tab').forEach(function (b) { b.classList.toggle('is-active', b.getAttribute('data-view') === state.view); });
+    var battle = state.view === 'social' && state.compare && state.compare.a && state.compare.b;
+    document.body.classList.toggle('has-battle-bg', !!battle);
+    if (battle) setBattleBackdrop(state.compare.a.profile, state.compare.b.profile);
+    else clearBattleBackdrop();
+    markNav(state.view);
+    bindScrollSpy();
   }
 
   function setView(name) {
+    if (['overview', 'library', 'legacy', 'social'].indexOf(name) < 0) return;
     state.view = name;
     syncView();
     if (state.model) runCountUps($('#view' + name.charAt(0).toUpperCase() + name.slice(1)));
+  }
+
+  var spyObserver = null;
+
+  /* highlight «Инвентарь» / «Трекер онлайна» while their card crosses the
+     middle of the screen */
+  function bindScrollSpy() {
+    if (spyObserver) { spyObserver.disconnect(); spyObserver = null; }
+    if (!window.IntersectionObserver || state.view !== 'overview') return;
+    var targets = [$('#rhythmCard'), $('#inventoryCard')].filter(Boolean);
+    if (!targets.length) return;
+    spyObserver = new IntersectionObserver(function (entries) {
+      if (state.view !== 'overview') return;
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        markNav(entry.target.id === 'rhythmCard' ? 'tracker' : 'inventory');
+      });
+    }, { rootMargin: '-42% 0px -42% 0px', threshold: 0 });
+    targets.forEach(function (node) { spyObserver.observe(node); });
+  }
+
+  function navTo(name) {
+    if (name === 'passport') { openPassport(); return; }
+    if (name === 'inventory' || name === 'tracker') {
+      setView('overview');
+      markNav(name);
+      var anchor = name === 'tracker' ? $('#rhythmCard') : $('#inventoryCard');
+      if (anchor) {
+        try { anchor.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { anchor.scrollIntoView(); }
+      }
+      return;
+    }
+    setView(name);
+    var target = $('#results') || $('#view' + name.charAt(0).toUpperCase() + name.slice(1));
+    if (target) {
+      try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { target.scrollIntoView(); }
+    }
+  }
+
+  /* two halves of the screen: each fighter's own wallpaper / live background */
+  function fillBattleVideo(video, src) {
+    if (!video) return;
+    if (src && video.getAttribute('src') !== src) {
+      video.setAttribute('src', src);
+      try { video.load(); } catch (e) { /* autoplay is best-effort */ }
+    }
+    if (src) {
+      var play = video.play();
+      if (play && play.catch) play.catch(function () { /* muted autoplay is fine to skip */ });
+    } else if (video.getAttribute('src')) {
+      try { video.pause(); } catch (e) { /* ignore */ }
+      video.removeAttribute('src');
+    }
+  }
+
+  function setBattleBackdrop(p1, p2) {
+    var left = $('#battleLeft');
+    var right = $('#battleRight');
+    if (left && right) {
+      var lImg = (p1 && p1.background) || '';
+      var rImg = (p2 && p2.background) || '';
+      left.style.backgroundImage = lImg ? 'url("' + lImg.replace(/"/g, '%22') + '")' : '';
+      right.style.backgroundImage = rImg ? 'url("' + rImg.replace(/"/g, '%22') + '")' : '';
+    }
+    fillBattleVideo($('#battleVideoL'), (p1 && p1.background_movie) || '');
+    fillBattleVideo($('#battleVideoR'), (p2 && p2.background_movie) || '');
+  }
+
+  function clearBattleBackdrop() {
+    var left = $('#battleLeft');
+    var right = $('#battleRight');
+    if (left) left.style.backgroundImage = '';
+    if (right) right.style.backgroundImage = '';
+    fillBattleVideo($('#battleVideoL'), '');
+    fillBattleVideo($('#battleVideoR'), '');
   }
 
   function setLang(lang) {
@@ -2212,7 +2501,8 @@
     if (state.model) renderAll();
     updateUrl();
     updateMeta(state.model);
-    loadHall();
+    applyFeedCollapsed();
+    loadFeed();
   }
 
   function setCurrency(cur) {
@@ -2221,7 +2511,7 @@
     persist();
     applyStaticI18n();
     if (state.model) renderAll();
-    loadHall();
+    loadFeed();
   }
 
   function applyAccent(hex) {
@@ -2333,6 +2623,8 @@
     $('#sidebar').hidden = true;
     $('#errorState').hidden = true;
     $('#shell').classList.remove('has-nav');
+    clearBattleBackdrop();
+    document.body.classList.remove('has-battle-bg');
 
     if (!API_BASE) {
       showError('offline');
@@ -2365,6 +2657,7 @@
     state.query = '';
     state.filter = 'all';
     state.compare = null;
+    state.duel = { a: null, b: null };
 
     setProfileBackdrop(model.profile);
     applyAccent((model.quality.best && model.quality.best.accent) || (model.games[0] && model.games[0].accent));
@@ -2376,7 +2669,7 @@
     pushHistory(model, query);
     updateUrl();
     updateMeta(model);
-    loadHall();
+    loadFeed();
 
     try { $('#results').scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { $('#results').scrollIntoView(); }
   }
@@ -2497,12 +2790,15 @@
   function resetToHome() {
     state.model = null;
     state.compare = null;
+    state.duel = { a: null, b: null };
     state.source = 'none';
     $('#results').hidden = true;
     $('#sidebar').hidden = true;
     $('#shell').classList.remove('has-nav');
     $('#errorState').hidden = true;
     $('#hero').hidden = false;
+    clearBattleBackdrop();
+    document.body.classList.remove('has-battle-bg');
     setProfileBackdrop(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
     focusSearch();
@@ -2510,7 +2806,7 @@
 
   function doCompare() {
     if (!state.model) { toast(t('toastNoProfile'), 'warn'); return; }
-    var input = $('#cmpB');
+    var input = $('#rivalInput');
     var q = input ? input.value.trim() : '';
     if (!q) { toast(t('comparePlaceholder'), 'warn'); if (input) input.focus(); return; }
     if (!API_BASE) { toast(t('toastSteamDown'), 'warn'); return; }
@@ -2574,6 +2870,23 @@
    * ------------------------------------------------------------------ */
 
   function bindEvents() {
+    /* news feed: game filter + collapse toggle */
+    var feedPick = $('#feedPick');
+    if (feedPick) {
+      feedPick.addEventListener('change', function () {
+        state.feedGame = feedPick.value || '';
+        loadFeed();
+      });
+    }
+    var feedToggle = $('#feedToggle');
+    if (feedToggle) {
+      feedToggle.addEventListener('click', function () {
+        state.feedCollapsed = !state.feedCollapsed;
+        store('sk_feed_collapsed', state.feedCollapsed ? '1' : '0');
+        applyFeedCollapsed();
+      });
+    }
+
     /* language + currency */
     $('#langSwitch').addEventListener('click', function (e) {
       var b = e.target.closest('[data-lang]');
@@ -2618,6 +2931,12 @@
 
     /* primary delegated click */
     document.addEventListener('click', function (e) {
+      var friendCmd = e.target.closest('[data-friend-cmd]');
+      if (friendCmd) {
+        runFriendCommand(friendCmd.getAttribute('data-friend-cmd'));
+        return;
+      }
+
       if (e.target.closest('[data-modal]') === e.target && e.target.hasAttribute('data-modal')) {
         closeModal();
         return;
@@ -2648,7 +2967,7 @@
       if (act) { handleAction(act.getAttribute('data-action'), act, e); return; }
 
       var tab = e.target.closest('.side-tab');
-      if (tab) { setView(tab.getAttribute('data-view')); return; }
+      if (tab) { navTo(tab.getAttribute('data-nav')); return; }
 
       var chip = e.target.closest('[data-filter]');
       if (chip) {
@@ -2688,15 +3007,17 @@
       }
     });
 
-    /* friends drag & drop */
+    /* friends: drag into a duel slot, right-click for quick actions */
     document.addEventListener('dragstart', function (e) {
       var item = e.target.closest ? e.target.closest('.friend') : null;
-      if (!item || !item.getAttribute('data-friend')) return;
-      state.dragFriend = item.getAttribute('data-friend');
+      if (!item) return;
+      state.dragFriend = item.getAttribute('data-friend') || '';
+      state.dragPersona = item.getAttribute('data-persona') || '';
+      state.dragAvatar = item.getAttribute('data-avatar') || '';
       item.classList.add('is-dragging');
-      if (e.dataTransfer) {
+      if (e.dataTransfer && state.dragFriend) {
         try {
-          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.effectAllowed = 'copy';
           e.dataTransfer.setData('text/plain', state.dragFriend);
         } catch (err) { /* older browsers */ }
       }
@@ -2704,31 +3025,57 @@
 
     document.addEventListener('dragover', function (e) {
       if (!state.dragFriend) return;
-      var item = e.target.closest ? e.target.closest('.friend') : null;
-      if (!item) return;
+      var slot = e.target.closest ? e.target.closest('.duel-slot') : null;
+      if (!slot) return;
       e.preventDefault();
-      if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-      $$('.friend.is-drop').forEach(function (n) { n.classList.remove('is-drop'); });
-      if (item.getAttribute('data-friend') !== state.dragFriend) item.classList.add('is-drop');
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+      slot.classList.add('drag-over');
+    });
+
+    document.addEventListener('dragleave', function (e) {
+      var slot = e.target.closest ? e.target.closest('.duel-slot') : null;
+      if (slot) slot.classList.remove('drag-over');
     });
 
     document.addEventListener('drop', function (e) {
-      if (!state.dragFriend) return;
-      var item = e.target.closest ? e.target.closest('.friend') : null;
-      if (!item) return;
+      var slot = e.target.closest ? e.target.closest('.duel-slot') : null;
+      if (!slot) return;
       e.preventDefault();
-      var target = item.getAttribute('data-friend');
-      if (reorderFriends(state.dragFriend, target) && state.model) renderSocial(state.model);
+      var steamid = state.dragFriend || (e.dataTransfer ? e.dataTransfer.getData('text/plain') : '');
+      var persona = state.dragPersona;
+      var avatar = state.dragAvatar;
+      slot.classList.remove('drag-over');
       state.dragFriend = '';
+      state.dragPersona = '';
+      state.dragAvatar = '';
+      if (!steamid) return;
+      setDuelSlot(slot.getAttribute('data-slot') || 'b', steamid, persona, avatar);
     });
 
     document.addEventListener('dragend', function () {
       state.dragFriend = '';
-      $$('.friend.is-dragging, .friend.is-drop').forEach(function (n) {
-        n.classList.remove('is-dragging');
-        n.classList.remove('is-drop');
-      });
+      state.dragPersona = '';
+      state.dragAvatar = '';
+      $$('.friend.is-dragging').forEach(function (n) { n.classList.remove('is-dragging'); });
+      $$('.duel-slot.drag-over').forEach(function (n) { n.classList.remove('drag-over'); });
     });
+
+    /* custom context menu on a friend card */
+    document.addEventListener('contextmenu', function (e) {
+      var item = e.target.closest ? e.target.closest('.friend') : null;
+      if (!item) return;
+      var steamid = item.getAttribute('data-friend') || '';
+      if (!/^\d{17}$/.test(steamid)) return;
+      e.preventDefault();
+      openFriendMenu(steamid, item.getAttribute('data-persona') || '', item.getAttribute('data-avatar') || '', e.clientX, e.clientY);
+    });
+
+    document.addEventListener('mousedown', function (e) {
+      if (!e.target.closest('#friendMenu')) closeFriendMenu();
+    });
+
+    window.addEventListener('resize', closeFriendMenu);
+    window.addEventListener('scroll', closeFriendMenu, { passive: true });
 
     /* keyboard */
     document.addEventListener('keydown', function (e) {
@@ -2747,7 +3094,7 @@
         return;
       }
 
-      if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'cmpB') {
+      if (e.key === 'Enter' && document.activeElement && document.activeElement.id === 'rivalInput') {
         e.preventDefault();
         doCompare();
       }
@@ -2782,8 +3129,9 @@
     applyStaticI18n();
     renderHistory();
     bindEvents();
-    loadHall();
-    setInterval(loadHall, 120000);
+    applyFeedCollapsed();
+    loadFeed();
+    setInterval(loadFeed, 900000);
 
     var hintBtn = $('#hintBtn');
     if (hintBtn) hintBtn.setAttribute('aria-expanded', 'false');

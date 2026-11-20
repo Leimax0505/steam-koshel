@@ -1474,10 +1474,16 @@ svg { display: block; }
   font-weight: 700;
   background: linear-gradient(150deg, #2b2440, #171a20);
   border: 1px solid var(--line-strong);
+  overflow: hidden;
 }
 
-.duel__name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.duel__meta { color: var(--muted-2); font-size: 10.5px; }
+.duel__ava img,
+.duel__ava video { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+
+.duel__ava video { position: relative; z-index: 1; }
+.duel__ava > span { position: absolute; display: grid; place-items: center; inset: 0; }
+
+.duel__name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }.duel__meta { color: var(--muted-2); font-size: 10.5px; }
 
 .duel__vs {
   display: grid;
@@ -1536,7 +1542,7 @@ svg { display: block; }
 
 .friend {
   display: grid;
-  grid-template-columns: 14px 38px minmax(0, 1fr) auto;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
   align-items: center;
   gap: 11px;
   padding: 10px 12px;
@@ -1548,17 +1554,7 @@ svg { display: block; }
 }
 
 .friend:active { cursor: grabbing; }
-.friend.is-dragging { opacity: 0.45; }
-.friend.is-drop { border-color: var(--accent); background: rgba(124, 92, 255, 0.12); }
-
-.friend__grip {
-  color: var(--muted-2);
-  font-size: 10px;
-  line-height: 1;
-  letter-spacing: -2px;
-  writing-mode: vertical-rl;
-  user-select: none;
-}
+.friend.is-dragging { opacity: 0.4; border-style: dashed; }
 
 .friend:hover { border-color: var(--line-strong); background: rgba(255, 255, 255, 0.04); }
 
@@ -1576,7 +1572,8 @@ svg { display: block; }
   overflow: hidden;
 }
 
-.friend__ava img { width: 100%; height: 100%; object-fit: cover; }
+.friend__ava img,
+.friend__ava video { width: 100%; height: 100%; object-fit: cover; }
 
 .friend__name { font-size: 12.5px; font-weight: 600; }
 .friend__sub { color: var(--muted-2); font-size: 10.5px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -1584,6 +1581,129 @@ svg { display: block; }
 .friend__score { text-align: right; }
 .friend__score b { display: block; font-size: 14px; font-weight: 650; color: var(--accent-2); font-variant-numeric: tabular-nums; }
 .friend__score small { color: var(--muted-2); font-size: 9.5px; }
+
+/* ---- duel builder (drag & drop into Player 1 / Player 2) ---------------- */
+
+.compare-zone { display: flex; flex-direction: column; gap: 14px; }
+
+.duel-slots {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+}
+
+.duel-slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 0;
+  padding: 13px 14px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.02);
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease), box-shadow 0.2s var(--ease), transform 0.2s var(--ease);
+}
+
+.duel-slot.drag-over {
+  border-style: solid;
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: 0 0 0 1px var(--accent), 0 0 28px -6px var(--accent);
+  transform: translateY(-1px);
+}
+
+.duel-slot__tag {
+  position: absolute;
+  top: -9px;
+  left: 12px;
+  padding: 1px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #14141a;
+  color: var(--muted-2);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.duel-slot__ava {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  background: linear-gradient(150deg, #2b2440, #171a20);
+  color: #dcd7ff;
+  font-size: 14px;
+  font-weight: 700;
+  overflow: hidden;
+}
+
+.duel-slot__ava img,
+.duel-slot__ava video { width: 100%; height: 100%; object-fit: cover; }
+
+.duel-slot__body { display: flex; flex-direction: column; min-width: 0; }
+.duel-slot__body b { font-size: 13.5px; font-weight: 650; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.duel-slot__body small { color: var(--muted-2); font-size: 10.5px; }
+
+.rival-manual { display: flex; align-items: flex-end; gap: 10px; }
+.rival-manual .field { flex: 1 1 auto; }
+.rival-drop { margin-top: 10px; }
+
+/* ---- friend context menu (right click) --------------------------------- */
+
+.ctx-menu {
+  position: fixed;
+  z-index: 200;
+  min-width: 190px;
+  padding: 5px;
+  border: 1px solid var(--line-strong);
+  border-radius: 13px;
+  background: rgba(18, 18, 22, 0.96);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--shadow);
+  animation: ctx-in 0.13s var(--ease);
+}
+
+@keyframes ctx-in {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+}
+
+.ctx-menu__head {
+  margin-bottom: 3px;
+  padding: 6px 10px 8px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 10.5px;
+  font-weight: 650;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ctx-menu button {
+  display: block;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease);
+}
+
+.ctx-menu button:hover { background: rgba(255, 255, 255, 0.07); color: var(--text); }
 
 /* -------------------------------- footer --------------------------------- */
 
@@ -1909,64 +2029,94 @@ svg { display: block; }
   to { transform: translateX(-50%); }
 }
 
-.tick-card {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 7px;
-  margin-right: 10px;
-  padding: 7px 12px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.025);
-  color: var(--text-soft);
-  font-size: 11.5px;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
-}
-
-.tick-card:hover { border-color: var(--line-strong); background: rgba(255, 255, 255, 0.065); }
-
-.tick-card__k {
-  color: var(--muted-2);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.tick-card__v {
-  color: var(--text);
-  font-weight: 650;
-  font-variant-numeric: tabular-nums;
-}
-
-.tick-card__who { color: var(--muted); font-size: 10.5px; }
-
-.tick-event {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin-right: 12px;
-  padding: 5px 2px;
-  border: 0;
-  background: transparent;
-  color: var(--muted);
-  font-size: 11.5px;
-  white-space: nowrap;
-  cursor: pointer;
-}
-
-.tick-event:hover { color: var(--text-soft); }
-.tick-event b { color: var(--text-soft); font-weight: 600; }
-.tick-event__dot { width: 4px; height: 4px; border-radius: 50%; background: var(--accent-2); }
-
 .tick-empty {
   padding-left: 8px;
   color: var(--muted-2);
   font-size: 11.5px;
   white-space: nowrap;
 }
+
+/* news marquee items (official ISteamNews headlines) */
+.tick-news {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  margin-right: 10px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--text-soft);
+  font-size: 11.5px;
+  white-space: nowrap;
+  transition: border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.tick-news:hover { border-color: var(--line-strong); background: rgba(255, 255, 255, 0.07); }
+
+.tick-news__k {
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: #ddd5ff;
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.tick-news__t { color: var(--text); font-weight: 550; }
+.tick-news__m { color: var(--muted-2); font-size: 10.5px; }
+
+/* game filter + collapse control on the right of the marquee */
+.ticker__tools {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  padding-right: clamp(16px, 4vw, 40px);
+}
+
+.ticker__pick {
+  appearance: none;
+  -webkit-appearance: none;
+  max-width: 160px;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text-soft);
+  font-family: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.ticker__pick:hover { border-color: var(--line-strong); color: var(--text); }
+.ticker__pick option { background: #14141a; color: var(--text); }
+
+.ticker__toggle {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  transition: color 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
+}
+
+.ticker__toggle:hover { color: var(--text); border-color: var(--line-strong); background: rgba(255, 255, 255, 0.07); }
+
+.ticker.is-collapsed { height: 40px; }
+.ticker.is-collapsed .ticker__viewport { display: none; }
 
 /* ---- shell + sidebar ---------------------------------------------------- */
 
@@ -1977,25 +2127,52 @@ svg { display: block; }
   align-items: start;
 }
 
-.shell.has-nav { grid-template-columns: 196px minmax(0, 1fr); }
+/* the section rail floats above the page (see .sidebar below), so the content
+   grid stays a single centred column */
+.shell.has-nav { grid-template-columns: minmax(0, 1fr); }
 
 .content { min-width: 0; }
 
+/* ── floating section rail (glassmorphism) ───────────────────────────────── */
+
 .sidebar {
-  position: sticky;
-  top: 122px;
-  z-index: 20;
+  position: fixed;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 40;
+  width: 172px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.45s var(--ease), visibility 0.45s var(--ease);
+}
+
+/* hidden on the start screen, fades in once a profile (or battle) is open */
+.shell.has-nav .sidebar,
+body.has-battle-bg .sidebar {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* keep the centred content clear of the rail while the viewport is too narrow
+   for the rail to sit inside the page gutter */
+@media (min-width: 1101px) and (max-width: 1540px) {
+  .shell.has-nav .content { padding-left: 192px; }
 }
 
 .side-nav {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   padding: 7px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-strong);
   border-radius: 18px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.012));
-  box-shadow: 0 20px 44px -30px rgba(0, 0, 0, 0.9);
+  background: rgba(14, 14, 18, 0.55);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: 0 26px 60px -34px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 .side-tab {
@@ -2023,17 +2200,28 @@ svg { display: block; }
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
-.side-tab .tab__dot { opacity: 0.35; }
-.side-tab.is-active .tab__dot {
+.side-tab__ico {
+  flex: 0 0 auto;
+  width: 17px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s var(--ease), color 0.2s var(--ease);
+}
+
+.side-tab:hover .side-tab__ico { opacity: 0.92; }
+
+.side-tab.is-active .side-tab__ico {
   opacity: 1;
-  background: var(--accent);
-  box-shadow: 0 0 10px var(--accent);
+  color: var(--accent);
+  filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 60%, transparent));
 }
 
 /* when a profile is open, the hero is gone — tighten the top spacing */
 .shell.has-nav .content > .results { margin-top: clamp(18px, 3vw, 30px); }
 
-/* ---- profile background in the gutters --------------------------------- */
+/* ---- profile / battle backdrop ----------------------------------------- */
 
 .backdrop {
   position: fixed;
@@ -2044,37 +2232,66 @@ svg { display: block; }
   transition: opacity 0.8s var(--ease);
 }
 
-body.has-profile-bg .backdrop { opacity: 1; }
+body.has-profile-bg .backdrop,
+body.has-battle-bg .backdrop { opacity: 1; }
 
-.backdrop__side {
+/* full-bleed live wallpaper for a single profile */
+.backdrop__media {
+  position: absolute;
+  inset: 0;
+  display: block;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 0.8s var(--ease);
+}
+
+.backdrop__video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+body.has-profile-bg .backdrop__media { opacity: 0.5; }
+
+/* battle: two half-screen wallpapers — exactly 50% / 50% */
+.backdrop__half {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: min(19vw, 320px);
-  background-image: var(--profile-bg);
+  width: 50%;
   background-size: cover;
   background-position: center;
-  filter: blur(26px) saturate(1.15) brightness(0.52);
-  opacity: 0.62;
+  filter: saturate(1.05) brightness(0.58);
+  opacity: 0;
+  transition: opacity 0.8s var(--ease);
 }
 
-.backdrop__side--l {
+.backdrop__half--l {
   left: 0;
-  mask-image: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, 0.45) 55%, transparent 100%);
-  -webkit-mask-image: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, 0.45) 55%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 68%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, #000 68%, transparent 100%);
 }
 
-.backdrop__side--r {
+.backdrop__half--r {
   right: 0;
-  mask-image: linear-gradient(270deg, #000 0%, rgba(0, 0, 0, 0.45) 55%, transparent 100%);
-  -webkit-mask-image: linear-gradient(270deg, #000 0%, rgba(0, 0, 0, 0.45) 55%, transparent 100%);
+  mask-image: linear-gradient(270deg, #000 68%, transparent 100%);
+  -webkit-mask-image: linear-gradient(270deg, #000 68%, transparent 100%);
 }
 
-.backdrop::after {
-  content: "";
+/* battle half videos, used when a fighter has live wallpaper */
+.backdrop__video-battle { object-fit: cover; }
+
+body.has-battle-bg .backdrop__half { opacity: 0.6; }
+body.has-battle-bg .backdrop__media { opacity: 0; }
+
+/* readability veil over everything */
+.backdrop__veil {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(10, 10, 12, 0.35), rgba(10, 10, 12, 0.12) 45%, rgba(10, 10, 12, 0.85));
+  background:
+    linear-gradient(180deg, rgba(10, 10, 12, 0.42), rgba(10, 10, 12, 0.08) 30%, rgba(10, 10, 12, 0.55) 78%, rgba(10, 10, 12, 0.92)),
+    radial-gradient(120% 90% at 50% 42%, rgba(10, 10, 12, 0.5), transparent 70%);
 }
 
 /* ---- animated avatar + presence ---------------------------------------- */
@@ -2237,41 +2454,28 @@ body.has-profile-bg .backdrop { opacity: 1; }
 
 /* ---- responsive -------------------------------------------------------- */
 
-@media (max-width: 1080px) {
-  .shell.has-nav { grid-template-columns: 172px minmax(0, 1fr); gap: 20px; }
+@media (max-width: 1100px) {
+  /* the fixed rail would overlap content on narrower screens — hide it */
+  .sidebar { display: none !important; }
   .side-tab { padding: 9px 10px; font-size: 12px; }
-}
-
-@media (max-width: 900px) {
-  .shell.has-nav { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  .sidebar { position: static; z-index: 1; }
-  .side-nav {
-    flex-direction: row;
-    gap: 4px;
-    padding: 5px;
-    overflow-x: auto;
-    scrollbar-width: none;
-    border-radius: 14px;
-  }
-  .side-nav::-webkit-scrollbar { display: none; }
-  .side-tab { padding: 8px 12px; font-size: 12px; border-radius: 10px; }
-  .tick-card__k { display: none; }
-  .backdrop__side { width: 26vw; opacity: 0.45; }
 }
 
 @media (max-width: 680px) {
   .ticker { height: 42px; gap: 9px; }
   .ticker__label span { display: none; }
   .ticker__label { padding-right: 9px; }
-  .tick-card { padding: 6px 10px; }
-  .tick-card__who { display: none; }
+  .ticker__pick { max-width: 112px; }
+  .tick-news { padding: 6px 10px; }
   .pick__cover { width: 100%; height: 118px; }
   .pick__actions { width: 100%; margin-left: 0; }
   .pick__actions .btn { flex: 1 1 0; justify-content: center; }
   .promo { align-items: flex-start; }
   .promo .btn { width: 100%; justify-content: center; }
   .presence { font-size: 12px; }
-  .friend { grid-template-columns: 12px 34px minmax(0, 1fr) auto; gap: 8px; padding: 9px 10px; }
+  .duel-slots { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .duel__vs { margin: 0 auto; }
+  .rival-manual { flex-direction: column; align-items: stretch; }
+  .friend { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 8px; padding: 9px 10px; }
   .friend__ava { width: 34px; height: 34px; }
   .friends--scroll { max-height: 330px; }
 }
