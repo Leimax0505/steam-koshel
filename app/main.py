@@ -456,6 +456,33 @@ async def index_html() -> FileResponse:
     return FileResponse(BASE_DIR / "index.html", headers={"Cache-Control": "no-store"})
 
 
+@app.get("/robots.txt", include_in_schema=False)
+async def robots_txt() -> Response:
+    body = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /api/\n"
+        "\n"
+        "Sitemap: https://steamkoshel.ru/sitemap.xml\n"
+    )
+    return Response(content=body, media_type="text/plain", headers={"Cache-Control": "public, max-age=86400"})
+
+
+@app.get("/sitemap.xml", include_in_schema=False)
+async def sitemap_xml() -> Response:
+    body = (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+        "  <url>\n"
+        "    <loc>https://steamkoshel.ru/</loc>\n"
+        "    <changefreq>weekly</changefreq>\n"
+        "    <priority>1.0</priority>\n"
+        "  </url>\n"
+        "</urlset>\n"
+    )
+    return Response(content=body, media_type="application/xml", headers={"Cache-Control": "public, max-age=86400"})
+
+
 app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
 
 

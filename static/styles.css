@@ -74,7 +74,7 @@ svg { display: block; }
   position: fixed;
   inset: 0;
   z-index: 0;
-  pointer-events: none;
+  pointer-events: none !important;
   overflow: hidden;
 }
 
@@ -206,7 +206,7 @@ svg { display: block; }
 
 .page {
   position: relative;
-  z-index: 1;
+  z-index: 10;
   width: 100%;
   max-width: var(--maxw);
   margin: 0 auto;
@@ -2227,7 +2227,7 @@ body.has-battle-bg .sidebar {
   position: fixed;
   inset: 0;
   z-index: 0;
-  pointer-events: none;
+  pointer-events: none !important;
   opacity: 0;
   transition: opacity 0.8s var(--ease);
 }
@@ -2243,6 +2243,7 @@ body.has-battle-bg .backdrop { opacity: 1; }
   background-size: cover;
   background-position: center;
   opacity: 0;
+  pointer-events: none !important;
   transition: opacity 0.8s var(--ease);
 }
 
@@ -2264,6 +2265,7 @@ body.has-profile-bg .backdrop__media { opacity: 0.5; }
   background-position: center;
   filter: saturate(1.05) brightness(0.58);
   opacity: 0;
+  pointer-events: none !important;
   transition: opacity 0.8s var(--ease);
 }
 
@@ -2289,6 +2291,7 @@ body.has-battle-bg .backdrop__media { opacity: 0; }
 .backdrop__veil {
   position: absolute;
   inset: 0;
+  pointer-events: none !important;
   background:
     linear-gradient(180deg, rgba(10, 10, 12, 0.42), rgba(10, 10, 12, 0.08) 30%, rgba(10, 10, 12, 0.55) 78%, rgba(10, 10, 12, 0.92)),
     radial-gradient(120% 90% at 50% 42%, rgba(10, 10, 12, 0.5), transparent 70%);

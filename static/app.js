@@ -335,8 +335,21 @@
 
   var LOCALES = { ru: 'ru-RU', en: 'en-US', zh: 'zh-CN' };
 
+  /* Last-resort label for a missing key: turn `navOverview` into
+     “Overview” instead of ever leaking the raw technical key to the UI. */
+  function humanizeKey(key) {
+    var raw = String(key == null ? '' : key);
+    raw = raw.replace(/^nav[A-Z]/, function (m) { return m.charAt(3); });
+    var spaced = raw
+      .replace(/[_-]+/g, ' ')
+      .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+      .trim();
+    if (!spaced) return '';
+    return spaced.charAt(0).toUpperCase() + spaced.slice(1);
+  }
+
   function t(key, vars) {
-    var s = (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || key;
+    var s = (I18N[state.lang] && I18N[state.lang][key]) || I18N.en[key] || humanizeKey(key);
     if (vars) {
       Object.keys(vars).forEach(function (k) {
         s = s.replace(new RegExp('\\{' + k + '\\}', 'g'), vars[k]);

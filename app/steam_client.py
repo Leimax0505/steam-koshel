@@ -252,10 +252,21 @@ class SteamClient:
             pass
 
         page = await self._profile_page(steamid)
-        return (
+        found = (
             self._html_class_media(page, "playerAvatarAutoSizeInner", ("webm", "mp4"))
             or self._html_class_media(page, "playerAvatarAutoSizeInner", ("gif",))
             or self._html_class_media(page, "playerAvatar", ("webm", "mp4", "gif"))
+        )
+        if found:
+            return found
+
+        # The hover mini-profile renders the same animated avatar for logged-out
+        # visitors and is a cheap second chance when the profile page is thin.
+        mini = await self._miniprofile_page(steamid)
+        return (
+            self._html_class_media(mini, "playerAvatar", ("webm", "mp4"))
+            or self._html_class_media(mini, "playerAvatarAutoSizeInner", ("webm", "mp4", "gif"))
+            or self._html_class_media(mini, "playerAvatar", ("gif",))
         )
 
     async def profile_background(self, steamid: str) -> dict[str, str]:
@@ -317,6 +328,29 @@ class SteamClient:
             return ""
 
     @staticmethod
+    def _account_id(steamid: str) -> str:
+        """SteamID64 -> 32-bit account id used by the mini-profile endpoint."""
+        try:
+            return str(int(steamid) - 76_561_197_960_265_728)
+        except (TypeError, ValueError):
+            return ""
+
+    async def _miniprofile_page(self, steamid: str) -> str:
+        """The hover mini-profile HTML — a second source for avatars / walls."""
+        account = self._account_id(steamid)
+        if not account:
+            return ""
+        try:
+            return await self._get_text(
+                f"{COMMUNITY_API}/miniprofile/{account}/",
+                cache_key=f"miniprofile:{steamid}",
+                ttl=15 * 60,
+                timeout=MEDIA_TIMEOUT,
+            )
+        except SteamError:
+            return ""
+
+    @staticmethod
     def _clean_url(raw: str) -> str:
         return raw.replace("\\/", "/").replace("&amp;", "&").strip()
 
@@ -344,7 +378,14 @@ class SteamClient:
         """Static wallpaper from `background-image: url(...)` on the profile."""
         if not page:
             return ""
-        for marker in ("has_profile_background", "profile_background_image_url", "background_image"):
+        for marker in (
+            "no_header profile_page",
+            "profile_background_image_content",
+            "profile_page_primary_bg",
+            "has_profile_background",
+            "profile_background_image_url",
+            "background_image",
+        ):
             anchor = page.find(marker)
             if anchor < 0:
                 continue
