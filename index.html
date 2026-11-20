@@ -27,7 +27,8 @@
   <link rel="stylesheet" href="static/styles.css" />
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <link rel="icon" type="image/png" sizes="120x120" href="/favicon.png" />
-  <link rel="apple-touch-icon" href="/favicon.png" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
   <!-- Yandex.Metrika counter -->
   <script type="text/javascript">
@@ -92,12 +93,6 @@
           <span class="tick-empty" data-i18n="feedEmpty">Свежие новости и скидки Steam появятся здесь.</span>
         </div>
       </div>
-      <div class="ticker__tools">
-        <select class="ticker__pick" id="feedPick" aria-label="Игра для новостей">
-          <option value="" data-i18n="feedAll">Все новости</option>
-        </select>
-        <button class="ticker__toggle" id="feedToggle" type="button" aria-label="Свернуть ленту" title="Свернуть ленту">⌃</button>
-      </div>
     </div>
   </header>
 
@@ -107,9 +102,6 @@
         <nav class="side-nav" aria-label="Разделы профиля">
           <button class="side-tab is-active" data-nav="overview" type="button">
             <span class="side-tab__ico" aria-hidden="true">▦</span><span data-i18n="navOverview">Обзор</span>
-          </button>
-          <button class="side-tab" data-nav="passport" type="button">
-            <span class="side-tab__ico" aria-hidden="true">▣</span><span data-i18n="navPassport">Паспорт</span>
           </button>
           <button class="side-tab" data-nav="library" type="button">
             <span class="side-tab__ico" aria-hidden="true">▤</span><span data-i18n="navGames">Игры</span>
@@ -124,7 +116,10 @@
             <span class="side-tab__ico" aria-hidden="true">⏱</span><span data-i18n="navTracker">Трекер онлайна</span>
           </button>
           <button class="side-tab" data-nav="social" type="button">
-            <span class="side-tab__ico" aria-hidden="true">⚔</span><span data-i18n="navFriends">Друзья</span>
+            <span class="side-tab__ico" aria-hidden="true">☰</span><span data-i18n="navFriends">Друзья</span>
+          </button>
+          <button class="side-tab side-tab--battle" data-nav="battle" type="button">
+            <span class="side-tab__ico" aria-hidden="true">⚔</span><span data-i18n="navBattle">Баттл 1 на 1</span>
           </button>
         </nav>
       </aside>
@@ -199,16 +194,38 @@
 
         <section class="results" id="results" hidden>
           <div class="profile" id="profileHead"></div>
-          <div class="views" id="views">
-            <div class="view" data-view="overview" id="viewOverview"></div>
-            <div class="view" data-view="library" id="viewLibrary" hidden></div>
-            <div class="view" data-view="legacy" id="viewLegacy" hidden></div>
-            <div class="view" data-view="social" id="viewSocial" hidden></div>
+          <div class="sections" id="sections">
+            <section class="sect" id="sectOverview" data-section="overview"></section>
+            <section class="sect" id="sectPassport" data-section="passport"></section>
+            <section class="sect" id="sectLibrary" data-section="library"></section>
+            <section class="sect" id="sectInventory" data-section="inventory"></section>
+            <section class="sect" id="sectLegacy" data-section="legacy"></section>
+            <section class="sect" id="sectTracker" data-section="tracker"></section>
+            <section class="sect" id="sectSocial" data-section="social"></section>
           </div>
+        </section>
+
+        <section class="arena" id="arena" hidden>
+          <div class="arena__bar">
+            <button class="btn btn--ghost btn--sm arena__back" type="button" data-action="battle-exit">
+              <svg viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M13 8H3.8M7.4 4.2 3.6 8l3.8 3.8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <span data-i18n="battleReturn">Вернуться к профилю</span>
+            </button>
+            <div class="arena__title" data-i18n="battleTitle">⚔️ Баттл 1 на 1</div>
+            <span class="arena__hint" data-i18n="battleHint">Выбери двух игроков — обои разделятся 50/50</span>
+          </div>
+          <div class="arena__body" id="arenaBody"></div>
         </section>
       </div>
     </div>
   </main>
+
+  <div class="boost" id="boostWrap">
+    <button class="boost__btn" id="boostBtn" type="button">
+      <span class="boost__spark" aria-hidden="true">⚡</span>
+      <span data-i18n="boostLabel">Пополнить Steam</span>
+    </button>
+  </div>
 
   <footer class="footer">
     <div class="footer__left">
@@ -218,9 +235,27 @@
     </div>
   </footer>
 
+  <div class="support" id="support">
+    <div class="support__pop" id="supportPop" hidden>
+      <div class="support__head">
+        <b data-i18n="contactTitle">Связаться с разработчиком</b>
+        <small data-i18n="contactSub">Предложить идею</small>
+      </div>
+      <form class="support__form" id="feedbackForm" autocomplete="off">
+        <input class="input" id="fbContact" type="text" maxlength="200" data-i18n-ph="contactField" />
+        <textarea class="input support__area" id="fbMessage" maxlength="2000" data-i18n-ph="messageField"></textarea>
+        <button class="btn btn--primary btn--block" id="fbSend" type="submit" data-i18n="contactSend">Отправить</button>
+      </form>
+    </div>
+    <button class="support__bubble" id="supportBubble" type="button" aria-expanded="false" aria-controls="supportPop" aria-label="Связаться с разработчиком">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 12.4c0 4-3.6 7.2-8 7.2-1 0-2-.2-2.9-.5L5 20.4l1.3-3.5A6.8 6.8 0 0 1 4 12.4C4 8.4 7.6 5.2 12 5.2s8 3.2 8 7.2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="9" cy="12.4" r="1" fill="currentColor"/><circle cx="12" cy="12.4" r="1" fill="currentColor"/><circle cx="15" cy="12.4" r="1" fill="currentColor"/></svg>
+    </button>
+  </div>
+
   <div id="modalRoot"></div>
   <div class="toasts" id="toasts" aria-live="polite"></div>
 
+  <script src="https://widget.kupikod.com/embed.js" data-partner="pk_7843648289_mwoi9qeg" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
   <script src="static/app.js" defer></script>
 </body>

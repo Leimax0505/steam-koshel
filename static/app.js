@@ -270,21 +270,15 @@
 
     feedLabel: ['Steam · новости и скидки', 'Steam · news & deals', 'Steam · 新闻与折扣'],
     feedEmpty: ['Свежие новости и скидки Steam появятся здесь.', 'Fresh Steam news and deals will appear here.', '最新的 Steam 新闻与折扣会出现在这里。'],
-    feedDeal: ['скидка', 'deal', '折扣'],
     feedNews: ['новость', 'news', '新闻'],
-    feedGame: ['игра', 'game', '游戏'],
-    feedFree: ['бесплатно', 'free', '免费'],
-    feedAll: ['Все новости', 'All news', '全部新闻'],
-    feedCollapse: ['Свернуть ленту', 'Collapse the feed', '收起新闻栏'],
-    feedExpand: ['Развернуть ленту', 'Expand the feed', '展开新闻栏'],
 
     navOverview: ['Обзор', 'Overview', '概览'],
-    navPassport: ['Паспорт', 'Passport', '护照'],
     navGames: ['Игры', 'Games', '游戏'],
     navInventory: ['Инвентарь', 'Inventory', '库存'],
     navTrophies: ['Трофеи', 'Trophies', '成就'],
     navTracker: ['Трекер онлайна', 'Online tracker', '在线追踪'],
     navFriends: ['Друзья', 'Friends', '好友'],
+    navBattle: ['Баттл 1 на 1', 'Battle 1v1', '一对一'],
 
     localTime: ['Местное время: {tz} ({off})', 'Local time: {tz} ({off})', '本地时间：{tz} ({off})'],
 
@@ -292,14 +286,43 @@
     passportSub: ['Коллекционная карточка профиля. Скачай PNG или вставь BB-код в витрину Steam.',
       'A collectible profile card. Download the PNG or paste the BB code into a Steam showcase.',
       '可收藏的档案卡。下载 PNG，或把 BB 代码贴进 Steam 展柜。'],
-    passportSerial: ['Серийный номер', 'Serial', '序列号'],
-    passportIssued: ['Выдан', 'Issued', '签发'],
-    passportCode: ['КОД КАРТОЧКИ', 'CARD CODE', '卡片代码'],
     profileId: ['ID ПРОФИЛЯ', 'PROFILE ID', '档案 ID'],
     favoriteGenre: ['Любимый жанр', 'Favourite genre', '最爱的类型'],
-    passportScan: ['Подлинность подтверждается кодом карточки', 'Authenticity confirmed by the card code', '以卡片代码验证真伪'],
-    passportFree: ['Коллекционный экземпляр · не для продажи', 'Collectible copy · not for sale', '收藏版本 · 非卖品'],
     passportBB: ['BB-код для витрины', 'BB code for your showcase', '展柜 BB 代码'],
+    passportSign: ['steamkoshel.ru', 'steamkoshel.ru', 'steamkoshel.ru'],
+
+    inventoryTitle: ['Инвентарь', 'Inventory', '库存饰品'],
+    inventorySub: ['Оценка предметов CS2, Dota 2, Rust и TF2 по ценам Steam Market',
+      'CS2, Dota 2, Rust and TF2 items priced via the Steam Market',
+      '按 Steam 市场价估算的 CS2、Dota 2、Rust 与 TF2 物品'],
+    inventoryHiddenLong: ['Инвентарь скрыт настройками приватности', 'Inventory is hidden by privacy settings', '库存因隐私设置不可见'],
+    inventoryPrivateHint: ['Открой «Инвентарь» в настройках приватности Steam — и оценка появится здесь.',
+      'Set “Inventory” to public in Steam privacy settings and the valuation will show up here.',
+      '在 Steam 隐私设置中把“库存”设为公开，估值就会显示在这里。'],
+    trackerTitle: ['Трекер онлайна', 'Online tracker', '在线追踪'],
+    trackerSub: ['Когда ты обычно играешь — по твоему местному времени',
+      'When you usually play — in your local time',
+      '你通常在什么时间游玩（按你的本地时间）'],
+
+    battleTitle: ['⚔️ Баттл 1 на 1', '⚔️ Battle 1v1', '⚔️ 一对一'],
+    battleHint: ['Выбери двух игроков — обои разделятся 50/50', 'Pick two players — the wallpaper splits 50/50', '选择两位玩家 —— 壁纸左右平分'],
+    battleReturn: ['Вернуться к профилю', 'Back to profile', '返回资料'],
+    battleOpenSub: ['Открой арену и сразись с другом 1 на 1', 'Open the arena and duel a friend 1v1', '进入竞技场，与好友一对一对决'],
+    battleOpen: ['Открыть арену', 'Open the arena', '进入竞技场'],
+
+    boostLabel: ['Пополнить Steam', 'Top up Steam', 'Steam 充值'],
+    boostLoading: ['Загрузка окна пополнения…', 'Loading the top-up window…', '正在加载充值窗口…'],
+
+    contactTitle: ['Связаться с разработчиком', 'Contact the developer', '联系开发者'],
+    contactSub: ['Предложить идею', 'Suggest an idea', '提出建议'],
+    contactField: ['Ваш контакт для ответа (Telegram @username или почта, необязательно)',
+      'Your contact (Telegram @username or email, optional)',
+      '你的联系方式（Telegram @username 或邮箱，可选）'],
+    messageField: ['Ваше сообщение, идея или найденный баг', 'Your message, idea or bug report', '你的留言、想法或发现的 bug'],
+    contactSend: ['Отправить', 'Send', '发送'],
+    contactSent: ['Сообщение отправлено разработчику!', 'Message sent to the developer!', '消息已发送给开发者！'],
+    contactFailed: ['Не удалось отправить. Попробуй позже.', 'Could not send. Try again later.', '发送失败，请稍后再试。'],
+    contactEmpty: ['Напиши сообщение', 'Write a message first', '请先输入内容'],
 
     presencePlaying: ['Сейчас играет: {game}', 'Playing {game}', '正在玩 {game}'],
     presenceJoin: ['Подключиться', 'Join', '加入'],
@@ -475,8 +498,6 @@
     pickIndex: 0,
     compare: null,
     duel: { a: null, b: null },
-    feedGame: '',
-    feedCollapsed: store('sk_feed_collapsed') === '1',
     dragFriend: '',
     dragPersona: '',
     dragAvatar: '',
@@ -1270,31 +1291,53 @@
    * 9. profile header
    * ------------------------------------------------------------------ */
 
+  /* Hard reset of every decorative media layer. Without it an old <video>
+     keeps playing on top of a new still image (the wallpaper “mixing” bug). */
+  function resetMediaLayers() {
+    ['#backdropVideo', '#battleVideoL', '#battleVideoR'].forEach(function (sel) {
+      var v = $(sel);
+      if (!v) return;
+      try { v.pause(); } catch (e) { /* ignore */ }
+      v.removeAttribute('src');
+      try { v.load(); } catch (e) { /* ignore */ }
+      v.style.display = 'none';
+    });
+    ['#backdropImage', '#battleLeft', '#battleRight'].forEach(function (sel) {
+      var n = $(sel);
+      if (n) n.style.backgroundImage = '';
+    });
+  }
+
+  function playVideo(node, src) {
+    if (!node) return;
+    if (!src) { node.style.display = 'none'; return; }
+    node.style.display = '';
+    if (node.getAttribute('src') !== src) {
+      node.setAttribute('src', src);
+      try { node.load(); } catch (e) { /* ignore */ }
+    }
+    var p = node.play();
+    if (p && p.catch) p.catch(function () { /* muted autoplay is fine to skip */ });
+  }
+
   function setProfileBackdrop(p) {
     var image = (p && p.background) || '';
     var movie = (p && p.background_movie) || '';
-    var imageNode = $('#backdropImage');
-    var video = $('#backdropVideo');
     var hasBg = !!(image || movie);
 
     document.body.classList.toggle('has-profile-bg', hasBg);
     document.body.classList.toggle('has-profile-movie', !!movie);
 
-    if (imageNode) {
-      imageNode.style.backgroundImage = image ? 'url("' + image.replace(/"/g, '%22') + '")' : '';
-    }
-    if (video) {
-      if (movie && video.getAttribute('src') !== movie) {
-        video.setAttribute('src', movie);
-        try { video.load(); } catch (e) { /* autoplay is best-effort */ }
-      }
-      if (movie) {
-        var play = video.play();
-        if (play && play.catch) play.catch(function () { /* muted autoplay is fine to skip */ });
-      } else if (video.getAttribute('src')) {
-        try { video.pause(); } catch (e) { /* ignore */ }
-        video.removeAttribute('src');
-      }
+    /* wipe every layer first, then enable exactly one of: video / photo / dark */
+    resetMediaLayers();
+
+    var imageNode = $('#backdropImage');
+    var video = $('#backdropVideo');
+    if (movie) {
+      playVideo(video, movie);
+    } else {
+      if (video) video.style.display = 'none';
+      if (imageNode) imageNode.style.backgroundImage = image ? 'url("' + image.replace(/"/g, '%22') + '")' : '';
     }
   }
 
@@ -1341,7 +1384,6 @@
 
   function renderOverview(m) {
     var html = '';
-    var invHidden = m.inventoryHidden && !m.inventory.length;
 
     html += stat(3, t('oHours'),
       count(0, m.totals.hours, 'int') + '<small>' + t('hoursShort') + '</small>',
@@ -1359,19 +1401,6 @@
       count(0, m.money.portfolio, 'money'),
       '<span class="stat__delta stat__delta--neutral">' + t('oInventory') + ': ' + money(m.money.inventory) + '</span>',
       money(m.money.sale) + ' ' + t('ofLibrary') + ' + ' + money(m.money.inventory));
-
-    if (invHidden) {
-      html += '<section class="card s3" id="inventoryCard"><div class="card__body" style="display:flex;flex-direction:column;gap:10px">' +
-        '<div class="stat__label">' + t('oInventory') + '</div>' +
-        '<div class="stat__value" style="font-size:22px">' + t('inventoryHidden') + '</div>' +
-        '<div class="stat__row"><span class="badge badge--warn">' + t('inventoryHidden') + '</span></div>' +
-        '</div></section>';
-    } else {
-      html += stat(3, t('oInventory'),
-        count(0, m.money.inventory, 'money'),
-        '<span class="stat__delta stat__delta--neutral">' + num(m.inventoryTotal || m.inventory.length) + ' ' + t('itemsWord') + '</span>',
-        m.inventory.length ? esc(m.inventory[0].name) : t('inventoryEmpty'), '', 'inventoryCard');
-    }
 
     /* curator */
     var paragraphs = portraitParagraphs(m);
@@ -1420,25 +1449,6 @@
       }).join('') + '</div>',
       foot: '<span class="badge">' + m.genres.length + ' ' + t('genresWord') + '</span>' +
         '<span class="badge">' + esc(genreName(m.topGenre.name)) + ' · ' + Math.round(m.topGenre.share * 100) + '%</span>'
-    });
-
-    /* rhythm — the online tracker, shown in the visitor's local timezone */
-    var maxH = Math.max.apply(null, m.hourly) || 1;
-    var tzLabel = m.tz && m.tz.name
-      ? t('localTime', { tz: m.tz.name, off: m.tz.offset })
-      : t('localTime', { tz: m.tz ? m.tz.offset : 'UTC', off: m.tz ? m.tz.offset : 'UTC' });
-    html += card({
-      span: 4,
-      id: 'rhythmCard',
-      title: t('rhythmTitle'),
-      hint: t(m.rhythmLabel),
-      aside: '<span class="badge">' + m.peakHour + ':00</span>',
-      body: '<div class="rhythm">' + m.hourly.map(function (v, i) {
-        return '<span class="rhythm__col ' + (i === m.peakHour ? 'is-peak' : '') + '"><i style="height:' + Math.max(3, Math.round((v / maxH) * 100)) + '%"></i></span>';
-      }).join('') + '</div>' +
-        '<div class="rhythm__scale"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>23:00</span></div>' +
-        '<p class="tiny muted rhythm__tz" style="margin-top:10px">' + esc(tzLabel) + '</p>' +
-        '<p class="tiny muted" style="margin-top:6px">' + t('rhythmNote', { h: m.peakHour, p: m.peakShare }) + '</p>'
     });
 
     /* account cleanliness */
@@ -1513,13 +1523,96 @@
       foot: '<span class="tiny">' + t('backlogNote') + '</span>'
     });
 
-    $('#viewOverview').innerHTML = '<div class="bento">' + html + '</div>';
+    $('#sectOverview').innerHTML = '<div class="bento">' + html + '</div>';
   }
 
-  function serialFor(m) {
-    var h = hash31(String(m.profile.steamid) + Math.round(m.totals.hours) + m.totals.games).toString(36).toUpperCase();
-    while (h.length < 7) h = '0' + h;
-    return 'SK-' + h.slice(0, 4) + '-' + h.slice(4, 7);
+  /* ------------------------------------------------------------------ *
+   * 10b. Digital Passport (inline section)
+   * ------------------------------------------------------------------ */
+
+  function renderPassport(m) {
+    var host = $('#sectPassport');
+    if (!host) return;
+    host.innerHTML = '<div class="bento">' + card({
+      span: 12,
+      title: t('passportTitle'),
+      hint: t('passportSub'),
+      aside: '<span class="badge badge--gold">Digital Passport</span>',
+      body: '<div class="passport-layout">' +
+        '<div>' + passportCard(m) + '</div>' +
+        '<div class="passport-actions">' +
+        '<button class="btn btn--primary btn--block" type="button" data-action="download-png">' + t('downloadPng') + '</button>' +
+        '<div class="field" style="margin-top:6px"><label>' + t('passportBB') + '</label>' +
+        '<textarea class="bb" id="bbCode" readonly>' + esc(bbCode(m)) + '</textarea></div>' +
+        '<button class="btn btn--ghost btn--block" type="button" data-action="copy-bb">' + t('copyBB') + '</button>' +
+        '</div></div>'
+    }) + '</div>';
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 10c. inventory section
+   * ------------------------------------------------------------------ */
+
+  function renderInventory(m) {
+    var host = $('#sectInventory');
+    if (!host) return;
+    var inv = m.inventory || [];
+    var hidden = m.inventoryHidden && !inv.length;
+    var total = m.inventoryTotal || inv.length;
+    var body;
+
+    if (hidden) {
+      body = '<div class="empty"><span class="empty__icon">🔒</span>' + t('inventoryHiddenLong') + '</div>' +
+        '<p class="tiny muted" style="margin-top:10px">' + t('inventoryPrivateHint') + '</p>';
+    } else if (!inv.length) {
+      body = '<div class="empty"><span class="empty__icon">◈</span>' + t('inventoryEmpty') + '</div>';
+    } else {
+      body = '<div class="games">' + inv.map(function (it) {
+        return '<div class="game" style="grid-template-columns:1fr auto;padding:10px 6px">' +
+          '<div style="min-width:0"><div class="game__name">' + esc(it.name || 'Item') + '</div>' +
+          '<div class="game__meta"><span>' + esc(it.game || 'Steam') + '</span>' +
+          (Number(it.count) > 1 ? '<span class="dot"></span><span>×' + Number(it.count) + '</span>' : '') + '</div></div>' +
+          '<span class="badge badge--gold">' + money(it.price) + '</span></div>';
+      }).join('') + '</div>';
+    }
+
+    host.innerHTML = '<div class="bento">' + card({
+      span: 12,
+      id: 'inventoryCard',
+      title: t('inventoryTitle'),
+      hint: t('inventorySub'),
+      aside: '<span class="badge badge--accent">' + num(total) + ' ' + t('itemsWord') + '</span>',
+      body: body,
+      foot: '<span class="tiny">' + t('oInventory') + ': ' + money(m.money.inventory) + '</span>'
+    }) + '</div>';
+  }
+
+  /* ------------------------------------------------------------------ *
+   * 10d. online tracker section (local timezone)
+   * ------------------------------------------------------------------ */
+
+  function renderTracker(m) {
+    var host = $('#sectTracker');
+    if (!host) return;
+    var maxH = Math.max.apply(null, m.hourly) || 1;
+    var tzLabel = m.tz && m.tz.name
+      ? t('localTime', { tz: m.tz.name, off: m.tz.offset })
+      : t('localTime', { tz: m.tz ? m.tz.offset : 'UTC', off: m.tz ? m.tz.offset : 'UTC' });
+
+    host.innerHTML = '<div class="bento">' + card({
+      span: 12,
+      id: 'rhythmCard',
+      title: t('trackerTitle'),
+      hint: t('trackerSub'),
+      aside: '<span class="badge badge--accent">' + t(m.rhythmLabel) + ' · ' + m.peakHour + ':00</span>',
+      body: '<div class="rhythm">' + m.hourly.map(function (v, i) {
+        return '<span class="rhythm__col ' + (i === m.peakHour ? 'is-peak' : '') + '"><i style="height:' + Math.max(3, Math.round((v / maxH) * 100)) + '%"></i></span>';
+      }).join('') + '</div>' +
+        '<div class="rhythm__scale"><span>0:00</span><span>6:00</span><span>12:00</span><span>18:00</span><span>23:00</span></div>' +
+        '<p class="tiny muted rhythm__tz" style="margin-top:10px">' + esc(tzLabel) + '</p>' +
+        '<p class="tiny muted" style="margin-top:6px">' + t('rhythmNote', { h: m.peakHour, p: m.peakShare }) + '</p>',
+      foot: '<span class="tiny">' + t('rhythmTitle') + '</span>'
+    }) + '</div>';
   }
 
   /* ------------------------------------------------------------------ *
@@ -1645,7 +1738,7 @@
       }).join('') + '</div>' : '<div class="empty"><span class="empty__icon">∅</span>' + t('noGames') + '</div>'
     });
 
-    $('#viewLibrary').innerHTML = '<div class="bento">' + html + '</div>';
+    $('#sectLibrary').innerHTML = '<div class="bento">' + html + '</div>';
   }
 
   /* ------------------------------------------------------------------ *
@@ -1753,43 +1846,73 @@
       foot: '<span class="tiny">' + t('legacyMuseumSub') + '</span>'
     });
 
-    $('#viewLegacy').innerHTML = '<div class="bento">' + html + '</div>';
+    $('#sectLegacy').innerHTML = '<div class="bento">' + html + '</div>';
   }
 
   /* ------------------------------------------------------------------ *
    * 13. social
    * ------------------------------------------------------------------ */
 
+  /* friends list, reused by the social section and by the battle arena */
+  function friendsListHtml(m, listId) {
+    if (!m.friends.length) {
+      return '<div class="empty"><span class="empty__icon">♧</span>' + t('friendsEmpty') + '</div>';
+    }
+    return '<p class="tiny muted" style="margin-bottom:10px">' + t('friendsDrag') + '</p>' +
+      '<div class="friends friends--scroll" id="' + listId + '">' + m.friends.map(function (f, i) {
+        var sid = String(f.steamid || '');
+        var key = sid || String(i);
+        var score = f.compat == null ? '—' : f.compat + '%';
+        return '<div class="friend" draggable="true" data-friend="' + esc(key) + '"' +
+          ' data-persona="' + esc(f.persona || '') + '"' +
+          ' data-avatar="' + esc(f.avatar || '') + '">' +
+          '<span class="friend__ava">' + avatarHtml(f.avatar, f.persona, '', f.avatar_animated) + '</span>' +
+          '<div style="min-width:0"><div class="friend__name">' + esc(f.persona) + '</div>' +
+          '<div class="friend__sub">' + t('sharedGames', { n: f.shared.length }) + (f.shared.length ? ' · ' + esc(f.shared.slice(0, 2).join(', ')) : '') + '</div></div>' +
+          '<div class="friend__score"><b>' + score + '</b><small>' + t('compat') + '</small></div>' +
+          '</div>';
+      }).join('') + '</div>';
+  }
+
+  /* duel picker (two player slots + manual rival input), lives in the arena */
+  function duelSlotsHtml() {
+    return '<div class="compare-zone" id="rivalZone">' +
+      '<div class="duel-slots">' +
+      '<div class="duel-slot" data-slot="a" id="duelSlotA">' +
+      '<span class="duel-slot__tag">' + t('duelPlayer1') + '</span>' +
+      '<span class="duel-slot__ava" id="duelAvaA"></span>' +
+      '<span class="duel-slot__body"><b id="duelNameA">—</b><small id="duelHintA">' + t('duelYou') + '</small></span>' +
+      '</div>' +
+      '<span class="duel__vs">VS</span>' +
+      '<div class="duel-slot" data-slot="b" id="duelSlotB">' +
+      '<span class="duel-slot__tag">' + t('duelPlayer2') + '</span>' +
+      '<span class="duel-slot__ava" id="duelAvaB"></span>' +
+      '<span class="duel-slot__body"><b id="duelNameB">—</b><small id="duelHintB">' + t('rivalDrop') + '</small></span>' +
+      '</div>' +
+      '</div>' +
+      '<div class="rival-manual">' +
+      '<div class="field"><label>' + t('compareFriend') + '</label>' +
+      '<input class="input" id="rivalInput" placeholder="' + t('comparePlaceholder') + '"></div>' +
+      '<button class="btn btn--primary btn--sm" type="button" data-action="compare">' + t('compareBtn') + '</button>' +
+      '</div>' +
+      '<p class="tiny muted rival-drop">' + t('friendsDrag') + '</p>' +
+      '</div>' +
+      '<div id="compareResult"></div>';
+  }
+
   function renderSocial(m) {
     var html = '';
 
     html += card({
       span: 12,
-      title: t('socialCompareTitle'),
-      hint: t('socialCompareSub'),
-      body:
-        '<div class="compare-zone" id="rivalZone">' +
-        '<div class="duel-slots">' +
-        '<div class="duel-slot" data-slot="a" id="duelSlotA">' +
-        '<span class="duel-slot__tag">' + t('duelPlayer1') + '</span>' +
-        '<span class="duel-slot__ava" id="duelAvaA"></span>' +
-        '<span class="duel-slot__body"><b id="duelNameA">—</b><small id="duelHintA">' + t('duelYou') + '</small></span>' +
-        '</div>' +
-        '<span class="duel__vs">VS</span>' +
-        '<div class="duel-slot" data-slot="b" id="duelSlotB">' +
-        '<span class="duel-slot__tag">' + t('duelPlayer2') + '</span>' +
-        '<span class="duel-slot__ava" id="duelAvaB"></span>' +
-        '<span class="duel-slot__body"><b id="duelNameB">—</b><small id="duelHintB">' + t('rivalDrop') + '</small></span>' +
-        '</div>' +
-        '</div>' +
-        '<div class="rival-manual">' +
-        '<div class="field"><label>' + t('compareFriend') + '</label>' +
-        '<input class="input" id="rivalInput" placeholder="' + t('comparePlaceholder') + '"></div>' +
-        '<button class="btn btn--primary btn--sm" type="button" data-action="compare">' + t('compareBtn') + '</button>' +
-        '</div>' +
-        '<p class="tiny muted rival-drop">' + t('friendsDrag') + '</p>' +
-        '</div>' +
-        '<div id="compareResult"></div>'
+      title: t('battleTitle'),
+      hint: t('battleOpenSub'),
+      cls: 'card--glow',
+      aside: '<span class="badge badge--accent">1 vs 1</span>',
+      body: '<div class="battle-cta">' +
+        '<p class="tiny muted">' + t('battleOpenSub') + '</p>' +
+        '<button class="btn btn--primary battle-cta__btn" type="button" data-action="battle-open">⚔️ ' + t('battleOpen') + '</button>' +
+        '</div>'
     });
 
     html += card({
@@ -1797,27 +1920,37 @@
       title: t('friendsTitle'),
       hint: t('friendsSub'),
       aside: '<span class="badge badge--accent">' + m.friends.length + '</span>',
-      body: m.friends.length
-        ? '<p class="tiny muted" style="margin-bottom:10px">' + t('friendsDrag') + '</p>' +
-          '<div class="friends friends--scroll" id="friendsList">' + m.friends.map(function (f, i) {
-            var sid = String(f.steamid || '');
-            var key = sid || String(i);
-            var score = f.compat == null ? '—' : f.compat + '%';
-            return '<div class="friend" draggable="true" data-friend="' + esc(key) + '"' +
-              ' data-persona="' + esc(f.persona || '') + '"' +
-              ' data-avatar="' + esc(f.avatar || '') + '">' +
-              '<span class="friend__ava">' + avatarHtml(f.avatar, f.persona, '', f.avatar_animated) + '</span>' +
-              '<div style="min-width:0"><div class="friend__name">' + esc(f.persona) + '</div>' +
-              '<div class="friend__sub">' + t('sharedGames', { n: f.shared.length }) + (f.shared.length ? ' · ' + esc(f.shared.slice(0, 2).join(', ')) : '') + '</div></div>' +
-              '<div class="friend__score"><b>' + score + '</b><small>' + t('compat') + '</small></div>' +
-              '</div>';
-          }).join('') + '</div>'
-        : '<div class="empty"><span class="empty__icon">♧</span>' + t('friendsEmpty') + '</div>'
+      body: friendsListHtml(m, 'friendsList')
     });
 
-    $('#viewSocial').innerHTML = '<div class="bento">' + html + '</div>';
-    if (!state.duel.a) state.duel.a = state.model;
+    $('#sectSocial').innerHTML = '<div class="bento">' + html + '</div>';
+  }
+
+  /* the dedicated 1v1 arena screen: split wallpapers + drag & drop fighters */
+  function renderArena(m) {
+    var host = $('#arenaBody');
+    if (!host) return;
+    var html = '';
+
+    html += card({
+      span: 12,
+      title: t('socialCompareTitle'),
+      hint: t('socialCompareSub'),
+      body: duelSlotsHtml()
+    });
+
+    html += card({
+      span: 12,
+      title: t('friendsTitle'),
+      hint: t('friendsDrag'),
+      aside: '<span class="badge badge--accent">' + m.friends.length + '</span>',
+      body: friendsListHtml(m, 'arenaFriends')
+    });
+
+    host.innerHTML = '<div class="bento">' + html + '</div>';
+    if (!state.duel.a) state.duel.a = m;
     updateDuelSlots();
+    afterDuelChange();
   }
 
   /* ------------------------------------------------------------------ *
@@ -1912,7 +2045,7 @@
   function setDuelSlot(slot, steamid, persona, avatar) {
     if (!state.model) { toast(t('toastNoProfile'), 'warn'); return; }
     if (!API_BASE) { toast(t('toastSteamDown'), 'warn'); return; }
-    if (state.view !== 'social') setView('social');
+    if (state.view !== 'battle') openArena();
 
     var zone = $('#rivalZone');
     if (zone) {
@@ -1974,45 +2107,11 @@
     track.innerHTML = html + html;
   }
 
-  function renderFeedPick(apps) {
-    var pick = $('#feedPick');
-    if (!pick) return;
-    var current = state.feedGame || '';
-    var html = '<option value="">' + esc(t('feedAll')) + '</option>';
-    (apps || []).forEach(function (a) {
-      html += '<option value="' + esc(a.appid) + '">' + esc(a.name) + '</option>';
-    });
-    pick.innerHTML = html;
-    pick.value = current;
-    /* the saved filter may not exist for this profile — fall back to «all» */
-    if (pick.value !== current) {
-      pick.value = '';
-      state.feedGame = '';
-    }
-  }
-
-  function applyFeedCollapsed() {
-    var ticker = $('#hallTicker');
-    var btn = $('#feedToggle');
-    if (ticker) ticker.classList.toggle('is-collapsed', !!state.feedCollapsed);
-    if (btn) {
-      var label = t(state.feedCollapsed ? 'feedExpand' : 'feedCollapse');
-      btn.textContent = state.feedCollapsed ? '⌄' : '⌃';
-      btn.setAttribute('title', label);
-      btn.setAttribute('aria-label', label);
-    }
-  }
-
   function loadFeed() {
     if (!API_BASE) return;
-    var url = API_BASE + '/steam-news' + (state.feedGame ? '?appid=' + encodeURIComponent(state.feedGame) : '');
-    fetch(url, { headers: { Accept: 'application/json' } })
+    fetch(API_BASE + '/steam-news', { headers: { Accept: 'application/json' } })
       .then(function (res) { return res.ok ? res.json() : null; })
-      .then(function (data) {
-        if (!data) return;
-        renderFeedPick(data.apps);
-        renderTicker(data);
-      })
+      .then(function (data) { if (data) renderTicker(data); })
       .catch(function () { /* the ticker is decorative — never break the page */ });
   }
 
@@ -2134,7 +2233,6 @@
     var ava = src
       ? '<img src="' + esc(src) + '" alt="" crossorigin="anonymous" onerror="this.style.display=\'none\'">'
       : '';
-    var issued = dateStr(Date.now());
     var createdYear = m.profile.created ? new Date(m.profile.created).getFullYear() : (m.persona.createdYear || '—');
     var favGenre = m.genres.length ? genreName(m.topGenre.name) : '—';
 
@@ -2155,18 +2253,14 @@
       '<div class="passport__genres">' + m.genres.slice(0, 4).map(function (g) {
         return '<span class="passport__genre">' + esc(genreName(g.name)) + ' ' + Math.round(g.share * 100) + '%</span>';
       }).join('') + '</div>' +
-      '<div class="passport__dna"><div><div class="passport__dna-label">' + t('passportCode') + '</div>' +
-      '<div class="passport__dna-code">' + serialFor(m) + '</div></div>' +
-      '<div style="text-align:right"><div class="passport__dna-label">' + t('passportIssued') + '</div>' +
-      '<div class="passport__dna-code" style="font-size:9px">' + esc(issued) + '</div></div></div>' +
-      '<div class="passport__note">' + t('passportScan') + ' · ' + t('passportFree') + '</div>' +
+      '<div class="passport__note">' + t('passportSign') + '</div>' +
       '</div>';
   }
 
   function bbCode(m) {
     var lines = [];
     lines.push('[b]STEAM KOSHEL[/b] — Digital Passport');
-    lines.push('[b]' + (m.profile.persona || 'Steam') + '[/b] · ' + t('passportCode') + ': ' + serialFor(m));
+    lines.push('[b]' + (m.profile.persona || 'Steam') + '[/b] — ' + t('passportSign'));
     lines.push('');
     lines.push('[b]' + t('oHours') + ':[/b] ' + num(m.totals.hours) + ' ' + t('hoursShort'));
     lines.push('[b]' + t('oGames') + ':[/b] ' + num(m.totals.games));
@@ -2178,27 +2272,6 @@
     lines.push('[i]' + m.genres.slice(0, 3).map(function (g) { return genreName(g.name); }).join(' · ') + '[/i]');
     lines.push('[url=' + profileSteamUrl(m.profile) + ']Steam profile[/url]');
     return lines.join('\n');
-  }
-
-  function openPassport() {
-    var m = state.model;
-    if (!m) { toast(t('toastNoProfile'), 'warn'); return; }
-    openModal(
-      '<div class="modal__head">' +
-      '<div><div class="modal__title">' + t('passportTitle') + '</div>' +
-      '<div class="modal__sub">' + t('passportSub') + '</div></div>' +
-      '<button class="icon-btn modal__close" type="button" data-action="modal-close">✕</button>' +
-      '</div>' +
-      '<div class="modal__body"><div class="passport-layout">' +
-      '<div>' + passportCard(m) + '</div>' +
-      '<div class="passport-actions">' +
-      '<button class="btn btn--primary btn--block" type="button" data-action="download-png">' + t('downloadPng') + '</button>' +
-      '<div class="field" style="margin-top:6px"><label>' + t('passportBB') + '</label>' +
-      '<textarea class="bb" id="bbCode" readonly>' + esc(bbCode(m)) + '</textarea></div>' +
-      '<button class="btn btn--ghost btn--block" type="button" data-action="copy-bb">' + t('copyBB') + '</button>' +
-      '<p class="tiny muted">' + t('passportSerial') + ': ' + serialFor(m) + '</p>' +
-      '</div></div></div>'
-    );
   }
 
   function downloadPassport() {
@@ -2235,7 +2308,7 @@
 
   function drawFallbackPassport(m) {
     return new Promise(function (resolve) {
-      var W = 760, H = 820;
+      var W = 760, H = 640;
       var canvas = document.createElement('canvas');
       canvas.width = W * 2;
       canvas.height = H * 2;
@@ -2322,22 +2395,9 @@
       var top = m.genres.slice(0, 3).map(function (g) { return genreName(g.name) + ' ' + Math.round(g.share * 100) + '%'; }).join('   ·   ');
       ctx.fillText(top, 52, gy + 40);
 
-      ctx.fillStyle = 'rgba(255,255,255,0.35)';
-      ctx.font = '500 11px Inter, sans-serif';
-      ctx.fillText(t('passportCode'), 52, 610);
-      ctx.fillStyle = 'rgba(255,255,255,0.85)';
-      ctx.font = '600 16px monospace';
-      ctx.fillText(serialFor(m), 52, 638);
-
-      ctx.fillStyle = 'rgba(255,255,255,0.3)';
-      ctx.font = '500 10px Inter, sans-serif';
-      ctx.fillText(t('passportIssued') + ' ' + dateStr(Date.now()), 52, 690);
-      ctx.fillText(t('passportScan'), 52, 712);
-      ctx.fillText(t('passportFree'), 52, 734);
-
       ctx.fillStyle = 'rgba(255,255,255,0.22)';
       ctx.font = '500 10px Inter, sans-serif';
-      ctx.fillText('steam koshel · digital passport', 52, H - 52);
+      ctx.fillText(t('passportSign') + ' · digital passport', 52, H - 52);
 
       var avatar = passportAvatarSrc(m.profile);
       if (!avatar) { resolve(canvas); return; }
@@ -2394,15 +2454,38 @@
     });
   }
 
+  /* every profile section is on one continuous page — this maps a nav item
+     to the block it should scroll to */
+  var SECTION_OF = {
+    overview: 'sectOverview',
+    library: 'sectLibrary',
+    inventory: 'sectInventory',
+    legacy: 'sectLegacy',
+    tracker: 'sectTracker',
+    social: 'sectSocial'
+  };
+
+  function sectionNode(name) {
+    return SECTION_OF[name] ? $('#' + SECTION_OF[name]) : null;
+  }
+
+  function smoothScrollTo(node, block) {
+    if (!node) return;
+    try { node.scrollIntoView({ behavior: 'smooth', block: block || 'start' }); } catch (e) { node.scrollIntoView(); }
+  }
+
   function renderAll() {
     var m = state.model;
     if (!m) return;
     $('#profileHead').innerHTML = renderProfile(m);
     renderOverview(m);
+    renderPassport(m);
     renderLibrary(m);
+    renderInventory(m);
     renderLegacy(m);
+    renderTracker(m);
     renderSocial(m);
-    if (state.compare) renderCompare(state.compare.a, state.compare.b);
+    if (state.view === 'battle') renderArena(m);
     syncView();
     runCountUps($('#results'));
   }
@@ -2414,95 +2497,101 @@
   }
 
   function syncView() {
-    $$('.view').forEach(function (v) { v.hidden = v.getAttribute('data-view') !== state.view; });
-    var battle = state.view === 'social' && state.compare && state.compare.a && state.compare.b;
-    document.body.classList.toggle('has-battle-bg', !!battle);
-    if (battle) setBattleBackdrop(state.compare.a.profile, state.compare.b.profile);
-    else clearBattleBackdrop();
+    var inArena = state.view === 'battle';
+    var a = state.duel.a;
+    var b = state.duel.b;
+    var both = inArena && a && a.profile && b && b.profile;
+    document.body.classList.toggle('has-battle-bg', !!both);
+    if (both) {
+      setBattleBackdrop(a.profile, b.profile);
+    } else {
+      clearBattleBackdrop();
+      /* in the arena with a single fighter — keep that fighter's own wallpaper */
+      if (inArena && a && a.profile) setProfileBackdrop(a.profile);
+    }
     markNav(state.view);
     bindScrollSpy();
   }
 
-  function setView(name) {
-    if (['overview', 'library', 'legacy', 'social'].indexOf(name) < 0) return;
-    state.view = name;
-    syncView();
-    if (state.model) runCountUps($('#view' + name.charAt(0).toUpperCase() + name.slice(1)));
-  }
-
   var spyObserver = null;
 
-  /* highlight «Инвентарь» / «Трекер онлайна» while their card crosses the
-     middle of the screen */
+  /* highlight the nav item whose section crosses the middle of the screen */
   function bindScrollSpy() {
     if (spyObserver) { spyObserver.disconnect(); spyObserver = null; }
-    if (!window.IntersectionObserver || state.view !== 'overview') return;
-    var targets = [$('#rhythmCard'), $('#inventoryCard')].filter(Boolean);
-    if (!targets.length) return;
+    if (!window.IntersectionObserver || state.view === 'battle') return;
+    var nodes = $$('.sect').filter(function (n) {
+      var name = n.getAttribute('data-section');
+      return name && SECTION_OF[name];
+    });
+    if (!nodes.length) return;
     spyObserver = new IntersectionObserver(function (entries) {
-      if (state.view !== 'overview') return;
       entries.forEach(function (entry) {
         if (!entry.isIntersecting) return;
-        markNav(entry.target.id === 'rhythmCard' ? 'tracker' : 'inventory');
+        var name = entry.target.getAttribute('data-section');
+        if (name) markNav(name);
       });
-    }, { rootMargin: '-42% 0px -42% 0px', threshold: 0 });
-    targets.forEach(function (node) { spyObserver.observe(node); });
+    }, { rootMargin: '-45% 0px -45% 0px', threshold: 0 });
+    nodes.forEach(function (n) { spyObserver.observe(n); });
   }
 
   function navTo(name) {
-    if (name === 'passport') { openPassport(); return; }
-    if (name === 'inventory' || name === 'tracker') {
-      setView('overview');
-      markNav(name);
-      var anchor = name === 'tracker' ? $('#rhythmCard') : $('#inventoryCard');
-      if (anchor) {
-        try { anchor.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) { anchor.scrollIntoView(); }
-      }
-      return;
-    }
-    setView(name);
-    var target = $('#results') || $('#view' + name.charAt(0).toUpperCase() + name.slice(1));
-    if (target) {
-      try { target.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { target.scrollIntoView(); }
-    }
+    if (name === 'battle') { openArena(); return; }
+    if (state.view === 'battle') { closeArena(name); return; }
+    state.view = name;
+    markNav(name);
+    smoothScrollTo(sectionNode(name) || $('#results'), 'start');
+  }
+
+  /* ---- arena: a dedicated 1v1 screen with 50/50 wallpapers --------------- */
+
+  function openArena() {
+    if (!state.model) { toast(t('toastNoProfile'), 'warn'); return; }
+    state.view = 'battle';
+    $('#results').hidden = true;
+    $('#arena').hidden = false;
+    renderArena(state.model);
+    syncView();
+    smoothScrollTo($('#arena'), 'start');
+  }
+
+  function closeArena(target) {
+    state.view = target && SECTION_OF[target] ? target : 'overview';
+    var arena = $('#arena');
+    if (arena) arena.hidden = true;
+    $('#results').hidden = false;
+    /* 50/50 wallpapers off, the loaded profile's own wallpaper back on */
+    clearBattleBackdrop();
+    document.body.classList.remove('has-battle-bg');
+    if (state.model) setProfileBackdrop(state.model.profile);
+    markNav(state.view);
+    bindScrollSpy();
+    smoothScrollTo(sectionNode(state.view) || $('#results'), 'start');
   }
 
   /* two halves of the screen: each fighter's own wallpaper / live background */
-  function fillBattleVideo(video, src) {
-    if (!video) return;
-    if (src && video.getAttribute('src') !== src) {
-      video.setAttribute('src', src);
-      try { video.load(); } catch (e) { /* autoplay is best-effort */ }
-    }
-    if (src) {
-      var play = video.play();
-      if (play && play.catch) play.catch(function () { /* muted autoplay is fine to skip */ });
-    } else if (video.getAttribute('src')) {
-      try { video.pause(); } catch (e) { /* ignore */ }
-      video.removeAttribute('src');
-    }
-  }
-
   function setBattleBackdrop(p1, p2) {
+    var v1 = (p1 && p1.background_movie) || '';
+    var v2 = (p2 && p2.background_movie) || '';
+    var bg1 = (p1 && p1.background) || '';
+    var bg2 = (p2 && p2.background) || '';
     var left = $('#battleLeft');
     var right = $('#battleRight');
-    if (left && right) {
-      var lImg = (p1 && p1.background) || '';
-      var rImg = (p2 && p2.background) || '';
-      left.style.backgroundImage = lImg ? 'url("' + lImg.replace(/"/g, '%22') + '")' : '';
-      right.style.backgroundImage = rImg ? 'url("' + rImg.replace(/"/g, '%22') + '")' : '';
-    }
-    fillBattleVideo($('#battleVideoL'), (p1 && p1.background_movie) || '');
-    fillBattleVideo($('#battleVideoR'), (p2 && p2.background_movie) || '');
+    if (left) left.style.backgroundImage = (!v1 && bg1) ? 'url("' + String(bg1).replace(/"/g, '%22') + '")' : '';
+    if (right) right.style.backgroundImage = (!v2 && bg2) ? 'url("' + String(bg2).replace(/"/g, '%22') + '")' : '';
+    playVideo($('#battleVideoL'), v1);
+    playVideo($('#battleVideoR'), v2);
+    /* the profile wallpaper would only add noise behind the split — pause it */
+    var profileVideo = $('#backdropVideo');
+    if (profileVideo) { try { profileVideo.pause(); } catch (e) { /* ignore */ } }
   }
 
   function clearBattleBackdrop() {
-    var left = $('#battleLeft');
-    var right = $('#battleRight');
-    if (left) left.style.backgroundImage = '';
-    if (right) right.style.backgroundImage = '';
-    fillBattleVideo($('#battleVideoL'), '');
-    fillBattleVideo($('#battleVideoR'), '');
+    ['#battleLeft', '#battleRight'].forEach(function (sel) {
+      var n = $(sel);
+      if (n) n.style.backgroundImage = '';
+    });
+    playVideo($('#battleVideoL'), '');
+    playVideo($('#battleVideoR'), '');
   }
 
   function setLang(lang) {
@@ -2514,7 +2603,6 @@
     if (state.model) renderAll();
     updateUrl();
     updateMeta(state.model);
-    applyFeedCollapsed();
     loadFeed();
   }
 
@@ -2631,10 +2719,13 @@
       return;
     }
     state.lastQuery = query;
+    state.view = 'overview';
 
     $('#results').hidden = true;
     $('#sidebar').hidden = true;
     $('#errorState').hidden = true;
+    var arena = $('#arena');
+    if (arena) arena.hidden = true;
     $('#shell').classList.remove('has-nav');
     clearBattleBackdrop();
     document.body.classList.remove('has-battle-bg');
@@ -2671,6 +2762,7 @@
     state.filter = 'all';
     state.compare = null;
     state.duel = { a: null, b: null };
+    state.view = 'overview';
 
     setProfileBackdrop(model.profile);
     applyAccent((model.quality.best && model.quality.best.accent) || (model.games[0] && model.games[0].accent));
@@ -2689,8 +2781,11 @@
 
   function showError(kind) {
     hideLoader();
+    state.view = 'overview';
     $('#results').hidden = true;
     $('#sidebar').hidden = true;
+    var arena = $('#arena');
+    if (arena) arena.hidden = true;
     $('#shell').classList.remove('has-nav');
     var box = $('#errorState');
     if (!box) return;
@@ -2800,13 +2895,50 @@
     showHistory(true);
   }
 
+  /* POST the developer-contact form; the backend relays it to Telegram */
+  function sendFeedback() {
+    var contactNode = $('#fbContact');
+    var messageNode = $('#fbMessage');
+    var sendBtn = $('#fbSend');
+    if (!messageNode) return;
+    var message = String(messageNode.value || '').trim();
+    if (!message) { toast(t('contactEmpty'), 'warn'); messageNode.focus(); return; }
+    if (!API_BASE) { toast(t('contactFailed'), 'warn'); return; }
+    var contact = String((contactNode && contactNode.value) || '').trim();
+
+    if (sendBtn) sendBtn.disabled = true;
+    fetch(API_BASE + '/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify({ contact: contact, message: message })
+    }).then(function (res) {
+      if (!res.ok) throw new Error('http ' + res.status);
+      return res.json().catch(function () { return {}; });
+    }).then(function () {
+      toast(t('contactSent'));
+      if (messageNode) messageNode.value = '';
+      if (contactNode) contactNode.value = '';
+      var pop = $('#supportPop');
+      if (pop) pop.hidden = true;
+      var bubble = $('#supportBubble');
+      if (bubble) bubble.setAttribute('aria-expanded', 'false');
+    }).catch(function () {
+      toast(t('contactFailed'), 'warn');
+    }).then(function () {
+      if (sendBtn) sendBtn.disabled = false;
+    });
+  }
+
   function resetToHome() {
     state.model = null;
     state.compare = null;
     state.duel = { a: null, b: null };
     state.source = 'none';
+    state.view = 'overview';
     $('#results').hidden = true;
     $('#sidebar').hidden = true;
+    var arena = $('#arena');
+    if (arena) arena.hidden = true;
     $('#shell').classList.remove('has-nav');
     $('#errorState').hidden = true;
     $('#hero').hidden = false;
@@ -2828,8 +2960,9 @@
     if (host) host.innerHTML = '<div class="note" style="margin-top:14px">' + esc(t('curatorThinking')) + '</div>';
     fetchLive(q).then(function (data) {
       var rival = buildModel(hydrate(data));
-      state.compare = { a: state.model, b: rival };
-      renderCompare(state.model, rival);
+      if (!state.duel.a) state.duel.a = state.model;
+      state.duel.b = rival;
+      afterDuelChange();
     }).catch(function () {
       toast(t('toastSteamDown'), 'warn');
       if (host) host.innerHTML = '<div class="note" style="margin-top:14px">' + t('compareNeedFriend') + '</div>';
@@ -2846,7 +2979,13 @@
         closeModal();
         break;
       case 'passport':
-        openPassport();
+        smoothScrollTo($('#sectPassport'), 'start');
+        break;
+      case 'battle-open':
+        openArena();
+        break;
+      case 'battle-exit':
+        closeArena();
         break;
       case 'download-png':
         downloadPassport();
@@ -2862,7 +3001,7 @@
         state.pickIndex++;
         if (state.model) {
           renderLibrary(state.model);
-          runCountUps($('#viewLibrary'));
+          runCountUps($('#sectLibrary'));
         }
         break;
       case 'compare':
@@ -2883,20 +3022,45 @@
    * ------------------------------------------------------------------ */
 
   function bindEvents() {
-    /* news feed: game filter + collapse toggle */
-    var feedPick = $('#feedPick');
-    if (feedPick) {
-      feedPick.addEventListener('change', function () {
-        state.feedGame = feedPick.value || '';
-        loadFeed();
+    /* KUPIKOD top-up: the widget renders its own hidden trigger (#kupikod-trigger) */
+    var boostBtn = $('#boostBtn');
+    if (boostBtn) {
+      boostBtn.addEventListener('click', function () {
+        var trigger = document.getElementById('kupikod-trigger');
+        if (trigger) { trigger.click(); return; }
+        toast(t('boostLoading'));
+        setTimeout(function () {
+          var again = document.getElementById('kupikod-trigger');
+          if (again) again.click();
+          else toast(t('boostLoading'), 'warn');
+        }, 500);
       });
     }
-    var feedToggle = $('#feedToggle');
-    if (feedToggle) {
-      feedToggle.addEventListener('click', function () {
-        state.feedCollapsed = !state.feedCollapsed;
-        store('sk_feed_collapsed', state.feedCollapsed ? '1' : '0');
-        applyFeedCollapsed();
+
+    /* support bubble + feedback form */
+    var supportBubble = $('#supportBubble');
+    var supportPop = $('#supportPop');
+    if (supportBubble && supportPop) {
+      supportBubble.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var open = supportPop.hidden;
+        supportPop.hidden = !open;
+        supportBubble.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+      supportPop.addEventListener('click', function (e) { e.stopPropagation(); });
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest('#support')) {
+          supportPop.hidden = true;
+          supportBubble.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    var feedbackForm = $('#feedbackForm');
+    if (feedbackForm) {
+      feedbackForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        sendFeedback();
       });
     }
 
@@ -2986,9 +3150,8 @@
       if (chip) {
         state.filter = chip.getAttribute('data-filter');
         if (state.model) {
-          if (state.view !== 'library') setView('library');
           renderLibrary(state.model);
-          runCountUps($('#viewLibrary'));
+          runCountUps($('#sectLibrary'));
         }
         return;
       }
@@ -2996,7 +3159,7 @@
       var yearBtn = e.target.closest('[data-year]');
       if (yearBtn) {
         state.year = Number(yearBtn.getAttribute('data-year'));
-        if (state.model) { renderLegacy(state.model); runCountUps($('#viewLegacy')); }
+        if (state.model) { renderLegacy(state.model); runCountUps($('#sectLegacy')); }
         return;
       }
 
@@ -3012,7 +3175,7 @@
         state.query = e.target.value;
         if (state.model) {
           renderLibrary(state.model);
-          runCountUps($('#viewLibrary'));
+          runCountUps($('#sectLibrary'));
           var again = $('#libSearch');
           if (again) { again.focus(); again.setSelectionRange(again.value.length, again.value.length); }
         }
@@ -3142,7 +3305,6 @@
     applyStaticI18n();
     renderHistory();
     bindEvents();
-    applyFeedCollapsed();
     loadFeed();
     setInterval(loadFeed, 900000);
 

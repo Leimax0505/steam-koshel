@@ -25,6 +25,7 @@ from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
 from .analyzer import build_profile
 from .cache import Cache
@@ -47,6 +48,11 @@ CACHE_PATH = os.getenv("CACHE_PATH") or str(BASE_DIR / "cache.db")
 MAX_DETAILS = _env_int("MAX_DETAILS", 40)
 ALLOWED_ORIGINS = [o.strip() for o in os.getenv("ALLOWED_ORIGINS", "*").split(",") if o.strip()]
 USER_AGENT = "SteamKoshel/1.0 (+https://github.com/; public Steam statistics only)"
+
+# Visitor feedback is forwarded to a Telegram chat when both values are set.
+# Without them the message is still stored in SQLite, so nothing is lost.
+TELEGRAM_BOT_TOKEN = (os.getenv("TELEGRAM_BOT_TOKEN") or "").strip()
+TELEGRAM_CHAT_ID = (os.getenv("TELEGRAM_CHAT_ID") or "").strip()
 
 
 @asynccontextmanager
@@ -77,7 +83,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS or ["*"],
     allow_credentials=False,
-    allow_methods=["GET"],
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
 )
 
@@ -125,6 +131,52 @@ async def rate_limiter(request: Request, call_next):
                 for key in [k for k, v in _rate_hits.items() if not v or now - v[-1] > RATE_WINDOW]:
                     _rate_hits.pop(key, None)
     return await call_next(request)
+
+
+# ------------------------------------------------------ feedback anti-spam
+#
+# The feedback form is public, so it gets its own tiny bucket: five messages
+# per hour per visitor. Keyed by the same `_client_ip` as the JSON API.
+
+FEEDBACK_LIMIT_PER_HOUR = _env_int("FEEDBACK_LIMIT_PER_HOUR", 5)
+FEEDBACK_WINDOW = 3_600.0
+_feedback_hits: dict[str, list[float]] = {}
+
+
+class FeedbackIn(BaseModel):
+    contact: str = Field(default="", max_length=200)
+    message: str = Field(default="", max_length=2_000)
+
+
+def _feedback_allowed(ip: str) -> bool:
+    now = time.time()
+    with _rate_lock:
+        hits = [t for t in (_feedback_hits.get(ip) or []) if now - t < FEEDBACK_WINDOW]
+        if len(hits) >= FEEDBACK_LIMIT_PER_HOUR:
+            _feedback_hits[ip] = hits
+            return False
+        hits.append(now)
+        _feedback_hits[ip] = hits
+        if len(_feedback_hits) > 4_000:
+            for key in [k for k, v in _feedback_hits.items() if not v or now - v[-1] > FEEDBACK_WINDOW]:
+                _feedback_hits.pop(key, None)
+        return True
+
+
+async def _send_telegram(request: Request, contact: str, message: str) -> None:
+    """Forward one message to Telegram when the bot is configured."""
+    if not (TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID):
+        return
+    text = f"📩 Новое сообщение с Steam Koshel\nКонтакт: {contact or '—'}\nСообщение: {message}"
+    try:
+        await request.app.state.http.post(
+            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+            json={"chat_id": TELEGRAM_CHAT_ID, "text": text},
+            timeout=10.0,
+        )
+    except httpx.HTTPError:
+        # A failed notification must never fail the visitor's request.
+        return
 
 
 # --------------------------------------------------------------------- helpers
@@ -370,6 +422,29 @@ async def steam_news(
         return {"items": [], "apps": [], "updated_at": int(time.time())}
 
 
+@app.post("/api/feedback")
+async def feedback(request: Request, body: FeedbackIn) -> JSONResponse:
+    """Accept one visitor message: store it and ping Telegram.
+
+    Throttled to five messages per hour per IP. Empty messages are rejected
+    so the inbox stays clean.
+    """
+    ip = _client_ip(request)
+    contact = (body.contact or "").strip()
+    message = (body.message or "").strip()
+    if not message:
+        return JSONResponse(status_code=400, content={"detail": "empty_message"})
+    if not _feedback_allowed(ip):
+        return JSONResponse(status_code=429, content={"detail": "too_many_messages"})
+
+    try:
+        request.app.state.cache.save_feedback(contact, message, ip)
+    except Exception:  # noqa: BLE001 - storage must not block the receipt
+        pass
+    await _send_telegram(request, contact, message)
+    return JSONResponse(content={"ok": True})
+
+
 @app.get("/api/hall-of-fame")
 async def hall_of_fame(request: Request) -> dict[str, Any]:
     return _hall_payload(request)
@@ -447,6 +522,32 @@ async def favicon_png() -> FileResponse:
     return FileResponse(
         BASE_DIR / "static" / "favicon.svg",
         media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=604800"},
+    )
+
+
+@app.get("/favicon.ico")
+async def favicon_ico() -> FileResponse:
+    """Classic /favicon.ico — search engines and older browsers ask for it."""
+    ico = BASE_DIR / "static" / "favicon.ico"
+    if ico.exists():
+        return FileResponse(ico, media_type="image/x-icon", headers={"Cache-Control": "public, max-age=604800"})
+    return FileResponse(
+        BASE_DIR / "static" / "favicon.svg",
+        media_type="image/svg+xml",
+        headers={"Cache-Control": "public, max-age=604800"},
+    )
+
+
+@app.get("/apple-touch-icon.png")
+async def apple_touch_icon() -> FileResponse:
+    """iOS home-screen icon."""
+    icon = BASE_DIR / "static" / "apple-touch-icon.png"
+    if icon.exists():
+        return FileResponse(icon, media_type="image/png", headers={"Cache-Control": "public, max-age=604800"})
+    return FileResponse(
+        BASE_DIR / "static" / "favicon.png" if (BASE_DIR / "static" / "favicon.png").exists() else BASE_DIR / "static" / "favicon.svg",
+        media_type="image/png" if (BASE_DIR / "static" / "favicon.png").exists() else "image/svg+xml",
         headers={"Cache-Control": "public, max-age=604800"},
     )
 

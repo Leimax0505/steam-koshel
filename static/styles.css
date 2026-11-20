@@ -2017,7 +2017,7 @@ svg { display: block; }
   align-items: center;
   width: max-content;
   padding: 7px 0;
-  animation: ticker-scroll 76s linear infinite;
+  animation: ticker-scroll 96s linear infinite;
   will-change: transform;
 }
 
@@ -2068,55 +2068,8 @@ svg { display: block; }
 .tick-news__t { color: var(--text); font-weight: 550; }
 .tick-news__m { color: var(--muted-2); font-size: 10.5px; }
 
-/* game filter + collapse control on the right of the marquee */
-.ticker__tools {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  margin-left: auto;
-  padding-right: clamp(16px, 4vw, 40px);
-}
-
-.ticker__pick {
-  appearance: none;
-  -webkit-appearance: none;
-  max-width: 160px;
-  padding: 5px 10px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.035);
-  color: var(--text-soft);
-  font-family: inherit;
-  font-size: 11px;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.2s var(--ease), color 0.2s var(--ease);
-}
-
-.ticker__pick:hover { border-color: var(--line-strong); color: var(--text); }
-.ticker__pick option { background: #14141a; color: var(--text); }
-
-.ticker__toggle {
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  width: 26px;
-  height: 26px;
-  border: 1px solid var(--line);
-  border-radius: 9px;
-  background: rgba(255, 255, 255, 0.035);
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1;
-  cursor: pointer;
-  transition: color 0.2s var(--ease), border-color 0.2s var(--ease), background 0.2s var(--ease);
-}
-
-.ticker__toggle:hover { color: var(--text); border-color: var(--line-strong); background: rgba(255, 255, 255, 0.07); }
-
-.ticker.is-collapsed { height: 40px; }
-.ticker.is-collapsed .ticker__viewport { display: none; }
+/* keep the flow calm: pause the marquee while the finger is down (touch) */
+.ticker:active .ticker__track { animation-play-state: paused; }
 
 /* ---- shell + sidebar ---------------------------------------------------- */
 
@@ -2158,7 +2111,7 @@ body.has-battle-bg .sidebar {
 
 /* keep the centred content clear of the rail while the viewport is too narrow
    for the rail to sit inside the page gutter */
-@media (min-width: 1101px) and (max-width: 1540px) {
+@media (min-width: 1151px) and (max-width: 1540px) {
   .shell.has-nav .content { padding-left: 192px; }
 }
 
@@ -2455,20 +2408,174 @@ body.has-battle-bg .backdrop__media { opacity: 0; }
 
 .passport__tier { letter-spacing: 0.08em; text-transform: uppercase; }
 
+/* ---- continuous one-page profile sections ------------------------------ */
+
+.sections { display: block; }
+
+.sect { scroll-margin-top: 78px; }
+
+.sect + .sect { margin-top: clamp(20px, 3vw, 34px); }
+
+.sect:empty { display: none; }
+
+/* ---- battle arena (dedicated 1v1 screen) ------------------------------- */
+
+.arena { scroll-margin-top: 78px; }
+
+.arena__bar {
+  position: sticky;
+  top: 62px;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: rgba(14, 14, 18, 0.72);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+}
+
+.arena__back { display: inline-flex; align-items: center; gap: 7px; }
+.arena__back svg { width: 14px; height: 14px; }
+
+.arena__title { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+
+.arena__hint { margin-left: auto; color: var(--muted-2); font-size: 11.5px; }
+
+.arena__body { margin-top: 16px; }
+
+/* bright 1v1 call-to-action card in the friends section */
+.battle-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.battle-cta__btn {
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: #0a0a0c;
+  font-weight: 750;
+  box-shadow: 0 14px 38px -16px color-mix(in srgb, var(--accent) 85%, transparent);
+}
+
+.battle-cta__btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* battle entry in the floating rail gets a neon tint */
+.side-tab--battle { color: var(--accent-2); }
+.side-tab--battle .side-tab__ico { opacity: 0.9; }
+.side-tab--battle.is-active {
+  color: var(--text);
+  background: color-mix(in srgb, var(--accent-2) 16%, transparent);
+}
+
+/* ---- KUPIKOD «Пополнить Steam» (centred, page bottom) ------------------ */
+
+/* the widget’s own corner trigger is replaced by our centred button */
+#kupikod-trigger-container { display: none !important; }
+
+.boost {
+  display: flex;
+  justify-content: center;
+  padding: 26px 16px 6px;
+}
+
+.boost__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 26px;
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  border-radius: 999px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 26%, rgba(20, 20, 26, 0.92)), rgba(16, 16, 22, 0.92));
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: 0 16px 44px -20px color-mix(in srgb, var(--accent) 85%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.boost__btn:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 82%, transparent);
+  box-shadow: 0 22px 54px -20px color-mix(in srgb, var(--accent) 95%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.boost__spark { font-size: 16px; filter: drop-shadow(0 0 8px var(--accent)); }
+
+/* ---- developer contact bubble (fixed, right-bottom) -------------------- */
+
+.support { position: fixed; right: 20px; bottom: 20px; z-index: 45; }
+
+.support__bubble {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 1px solid color-mix(in srgb, var(--accent-2) 50%, transparent);
+  border-radius: 50%;
+  background: rgba(16, 16, 22, 0.92);
+  color: var(--accent-2);
+  cursor: pointer;
+  box-shadow: 0 18px 44px -18px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s var(--ease), border-color 0.2s var(--ease);
+}
+
+.support__bubble:hover { transform: translateY(-2px); border-color: var(--accent-2); }
+.support__bubble svg { width: 24px; height: 24px; }
+
+.support__pop {
+  position: absolute;
+  right: 0;
+  bottom: 64px;
+  width: min(324px, calc(100vw - 40px));
+  padding: 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 18px;
+  background: rgba(14, 14, 18, 0.97);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow: 0 30px 70px -30px rgba(0, 0, 0, 0.95);
+  animation: support-in 0.22s var(--ease);
+}
+
+@keyframes support-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.support__head { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
+.support__head b { font-size: 14px; font-weight: 700; }
+.support__head small { color: var(--muted-2); font-size: 11.5px; }
+
+.support__form { display: flex; flex-direction: column; gap: 8px; }
+.support__area { min-height: 92px; resize: vertical; }
+
 /* ---- responsive -------------------------------------------------------- */
 
-@media (max-width: 1100px) {
+@media (max-width: 1150px) {
   /* the fixed rail would overlap content on narrower screens — hide it */
   .sidebar { display: none !important; }
   .side-tab { padding: 9px 10px; font-size: 12px; }
 }
 
+/* phones/tablets: let the news ribbon breathe and read comfortably */
+@media (max-width: 768px) {
+  .ticker { height: 54px; gap: 10px; }
+  .ticker__track { padding: 10px 0; }
+  .tick-news { padding: 8px 13px; font-size: 13px; }
+  .tick-news__k { font-size: 9.5px; }
+}
+
 @media (max-width: 680px) {
-  .ticker { height: 42px; gap: 9px; }
   .ticker__label span { display: none; }
   .ticker__label { padding-right: 9px; }
-  .ticker__pick { max-width: 112px; }
-  .tick-news { padding: 6px 10px; }
   .pick__cover { width: 100%; height: 118px; }
   .pick__actions { width: 100%; margin-left: 0; }
   .pick__actions .btn { flex: 1 1 0; justify-content: center; }
@@ -2481,6 +2588,13 @@ body.has-battle-bg .backdrop__media { opacity: 0; }
   .friend { grid-template-columns: 34px minmax(0, 1fr) auto; gap: 8px; padding: 9px 10px; }
   .friend__ava { width: 34px; height: 34px; }
   .friends--scroll { max-height: 330px; }
+  .support { right: 14px; bottom: 14px; }
+  .support__bubble { width: 46px; height: 46px; }
+  .support__bubble svg { width: 21px; height: 21px; }
+  .support__pop { bottom: 56px; }
+  .boost { padding: 20px 14px 4px; }
+  .boost__btn { width: 100%; max-width: 360px; justify-content: center; }
+  .arena__hint { display: none; }
 }
 
 @media print {

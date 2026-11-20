@@ -46,6 +46,13 @@ class Cache:
             "appid INTEGER PRIMARY KEY, name TEXT, price REAL, discount INTEGER, "
             "currency TEXT, updated REAL)"
         )
+        # Visitor messages from the «связаться с разработчиком» widget. Rows are
+        # tiny, so they can live next to the price cache without any extra cost.
+        self._db.execute(
+            "CREATE TABLE IF NOT EXISTS feedback ("
+            "id INTEGER PRIMARY KEY AUTOINCREMENT, contact TEXT, message TEXT, "
+            "ip TEXT, created REAL)"
+        )
         self._db.commit()
 
     # ------------------------------------------------------------------ kv
@@ -144,6 +151,15 @@ class Cache:
             self._db.commit()
 
     # ----------------------------------------------------------------- misc
+
+    def save_feedback(self, contact: str, message: str, ip: str = "") -> None:
+        """Store one visitor message (used by POST /api/feedback)."""
+        with self._lock:
+            self._db.execute(
+                "INSERT INTO feedback (contact, message, ip, created) VALUES (?, ?, ?, ?)",
+                (contact or "", message or "", ip or "", time.time()),
+            )
+            self._db.commit()
 
     def purge_expired(self) -> int:
         now = time.time()

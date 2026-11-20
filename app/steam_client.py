@@ -28,12 +28,17 @@ NEWS_FEED_TTL = 15 * 60
 # Big, always-updating pages — their news makes the top marquee feel alive.
 TOP_NEWS_APPS = (730, 570, 1172470, 271590)  # CS2, Dota 2, Apex, GTA V
 
-# Games offered in the top news feed filter (and used as the default set).
+# Games offered in the top news feed (and used as the default set). The list
+# is deliberately broad so the marquee never runs out of fresh headlines.
 NEWS_APPS: tuple[tuple[int, str], ...] = (
     (730, "Counter-Strike 2"),
     (570, "Dota 2"),
     (252490, "Rust"),
+    (271590, "Grand Theft Auto V"),
+    (578080, "PUBG: BATTLEGROUNDS"),
+    (1172470, "Apex Legends"),
     (440, "Team Fortress 2"),
+    (1091500, "Cyberpunk 2077"),
 )
 
 # Profile media (animated avatar / wallpaper) is purely decorative — a short
@@ -59,7 +64,7 @@ HTML_HEADERS = {
 MEDIA_URL_RE = re.compile(r"https?://[^\s\"'<>]+?\.(?:webm|mp4|gif|jpg|jpeg|png)(?:\?[^\s\"'<>]*)?", re.I)
 HTML_MEDIA_RE = re.compile(r"<(?:source|img)\b[^>]*\bsrc=[\"']([^\"']+)[\"']", re.I)
 BG_URL_RE = re.compile(r"background-image\s*:\s*url\(\s*['\"]?([^'\")]+)", re.I)
-CDN_HOSTS = ("steamstatic.com", "akamaihd.net")
+CDN_HOSTS = ("steamstatic.com", "akamaihd.net", "steamcommunity.com")
 
 STEAMID64_RE = re.compile(r"7656\d{13}")
 PROFILE_ID_RE = re.compile(r"/profiles/(\d{17})")
@@ -255,6 +260,7 @@ class SteamClient:
         found = (
             self._html_class_media(page, "playerAvatarAutoSizeInner", ("webm", "mp4"))
             or self._html_class_media(page, "playerAvatarAutoSizeInner", ("gif",))
+            or self._html_class_media(page, "playerAvatarAutoSizeInner", ("png",))
             or self._html_class_media(page, "playerAvatar", ("webm", "mp4", "gif"))
         )
         if found:
@@ -264,9 +270,10 @@ class SteamClient:
         # visitors and is a cheap second chance when the profile page is thin.
         mini = await self._miniprofile_page(steamid)
         return (
-            self._html_class_media(mini, "playerAvatar", ("webm", "mp4"))
-            or self._html_class_media(mini, "playerAvatarAutoSizeInner", ("webm", "mp4", "gif"))
-            or self._html_class_media(mini, "playerAvatar", ("gif",))
+            self._html_class_media(mini, "playerAvatarAutoSizeInner", ("webm", "mp4"))
+            or self._html_class_media(mini, "playerAvatar", ("webm", "mp4"))
+            or self._html_class_media(mini, "playerAvatarAutoSizeInner", ("gif", "png"))
+            or self._html_class_media(mini, "playerAvatar", ("gif", "png"))
         )
 
     async def profile_background(self, steamid: str) -> dict[str, str]:
@@ -488,7 +495,7 @@ class SteamClient:
 
     # ---------------------------------------------------------------- feed
 
-    async def news_rss(self) -> list[dict[str, Any]]:
+    async def news_rss(self, limit: int = 10) -> list[dict[str, Any]]:
         """Official Steam store news RSS (releases and announcements)."""
         try:
             text = await self._get_text(
@@ -498,7 +505,7 @@ class SteamClient:
             )
         except SteamError:
             return []
-        return self._parse_rss(text, "news", limit=10)
+        return self._parse_rss(text, "news", limit=limit)
 
     async def special_deals(self) -> list[dict[str, Any]]:
         """Current store specials via the JSON the Steam front page uses."""
@@ -573,29 +580,65 @@ class SteamClient:
         return items
 
     async def steam_news(self, appid: Optional[int] = None) -> dict[str, Any]:
-        """Cached news feed for the top marquee with an optional game filter."""
+        """Cached news feed for the top marquee with an optional game filter.
+
+        Without a filter it merges the official Steam store RSS (store /
+        client updates) with ISteamNews headlines for the eight biggest
+        games, then interleaves them by source so the same game never shows
+        up twice in a row. Cached for fifteen minutes.
+        """
         if appid:
             selected = tuple(a for a in NEWS_APPS if a[0] == int(appid)) or ((int(appid), str(int(appid))),)
             per_app = 12
         else:
             selected = NEWS_APPS
-            per_app = 6
+            per_app = 8
         labels = {aid: name for aid, name in selected}
         ids = [aid for aid, _ in selected]
 
-        chunks = await asyncio.gather(*(self._news_one(aid, per_app) for aid in ids), return_exceptions=True)
-        items: list[dict[str, Any]] = []
+        chunks = await asyncio.gather(
+            *(self._news_one(aid, per_app) for aid in ids),
+            return_exceptions=True,
+        )
+        groups: list[list[dict[str, Any]]] = []
         for aid, chunk in zip(ids, chunks):
-            if not isinstance(chunk, list):
+            if not isinstance(chunk, list) or not chunk:
                 continue
-            for row in chunk:
-                items.append({**row, "appid": aid, "game": labels.get(aid, str(aid))})
-        items.sort(key=lambda row: row.get("ts") or 0, reverse=True)
+            rows = sorted(chunk, key=lambda row: row.get("ts") or 0, reverse=True)
+            groups.append([{**row, "appid": aid, "game": labels.get(aid, str(aid))} for row in rows])
+
+        # The store-wide RSS leads the feed when no single game was requested.
+        if not appid:
+            rss = await self.news_rss(limit=20)
+            if rss:
+                groups.insert(0, [{**row, "appid": 0, "game": "Steam"} for row in rss])
+
+        items = self._interleave(groups)
         return {
-            "items": items[:40],
+            "items": items[:60],
             "apps": [{"appid": aid, "name": name} for aid, name in NEWS_APPS],
             "updated_at": int(time.time()),
         }
+
+    @staticmethod
+    def _interleave(groups: list[list[dict[str, Any]]], limit: int = 60) -> list[dict[str, Any]]:
+        """Round-robin across sources, skipping duplicate URLs."""
+        out: list[dict[str, Any]] = []
+        seen: set[str] = set()
+        depth = max((len(group) for group in groups), default=0)
+        for index in range(depth):
+            for group in groups:
+                if index >= len(group):
+                    continue
+                row = group[index]
+                url = row.get("url")
+                if not url or url in seen:
+                    continue
+                seen.add(url)
+                out.append(row)
+                if len(out) >= limit:
+                    return out
+        return out
 
     async def home_feed(self) -> dict[str, Any]:
         """Deals first, then store news, then big-game headlines."""
@@ -739,7 +782,7 @@ class SteamClient:
             try:
                 data = await self._get_json(
                     f"{COMMUNITY_API}/inventory/{steamid}/{appid}/{context}",
-                    {"l": lang, "count": 1000},
+                    {"l": lang, "count": 75},
                     cache_key=f"inv:{steamid}:{appid}",
                     ttl=3_600,
                     headers=headers,
